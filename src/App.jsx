@@ -50,6 +50,8 @@ const weekDays = [
     muscleGroups:["Mobility","Rotator Cuff","Core","Recovery"] },
 ];
 
+const S = "sunday";
+
 const meals = {
   [T]: [
     { id:"m1",time:"9:00 AM",label:"MEAL 1",title:"Post-Workout Recovery Breakfast",sub:"Break the fast · Anabolic window · Largest meal",emoji:"🍳",color:"#C8943A",
@@ -87,23 +89,117 @@ const meals = {
       note:"Reduced sweet potato on rest day. Zucchini adds manganese — cofactor for superoxide dismutase.",
       keys:["EPA/DHA omega-3 (salmon)","Manganese (zucchini)","Vitamin C (bell pepper)","Anti-inflammatory (turmeric)"] },
   ],
+  [S]: [
+    { id:"s1",time:"5:00 PM",label:"ONLY MEAL",title:"24-Hour Fast Break — Autophagy Refeed",sub:"Sat 5 PM → Sun 5 PM · 24-hr fast · Single meal · Gentle reintroduction",emoji:"🌿",color:"#6B4FBB",
+      items:[{name:"Salmon fillet (cooked)",amt:"220g",p:44,c:0,f:22,cal:385},{name:"Bone broth (warm, to start)",amt:"240ml",p:6,c:0,f:1,cal:35},{name:"Asparagus (steamed)",amt:"150g",p:4,c:6,f:0,cal:34},{name:"Spinach (wilted)",amt:"120g",p:4,c:4,f:0,cal:28},{name:"Zucchini (steamed)",amt:"150g",p:3,c:5,f:0,cal:25},{name:"Avocado",amt:"½ medium (75g)",p:1,c:4,f:11,cal:112},{name:"Extra virgin olive oil",amt:"1 tbsp (14g)",p:0,c:0,f:14,cal:119},{name:"Sauerkraut (raw)",amt:"60g",p:1,c:2,f:0,cal:11},{name:"Lemon + garlic + turmeric + black pepper",amt:"to taste",p:0,c:1,f:0,cal:5},{name:"Zena Greens Supergreens (1 stick)",amt:"~11g stick pack",p:1,c:3,f:0,cal:15}],
+      note:"Start with bone broth first — primes digestive enzymes after 24 hrs of rest. No starches or heavy carbs: keeping insulin low preserves the autophagy state as long as possible into the refeed. Salmon + olive oil + avocado deliver fat-soluble vitamins and omega-3 — most critical after a full day of cellular cleanup. Supergreens in water alongside. All supplements (Vitality, D3/K2, DHT Blocker) taken here with the meal fat.",
+      keys:["Digestive priming (bone broth first)","EPA/DHA anti-inflammatory (salmon)","Autophagy-preserving (no starches)","Fat-soluble nutrient delivery (avocado + olive oil)","Probiotics (sauerkraut + supergreens)"] },
+  ],
 };
 
-const suppSchedule = [
-  { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
-    supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue first. Does not break fast."},{name:"Vitality (2 caps) — Transparent Labs",note:"Taken fasted at 4 AM with pre-training stack."},{name:"Bulk Pre-Workout",note:"Mix and drink. Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Nitric oxide + adrenal support. Amplified fasted."}],warning:null },
-  { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Do or Die + Main Session",color:"#B84040",
-    supps:[{name:"Water + Electrolytes (sea salt + lite salt)",note:"Sip throughout. 3.5 hrs fasted = high electrolyte loss."}],warning:null },
-  { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
-    supps:[{name:"Black Coffee",note:"Continued fast. Amplifies fat oxidation post-training."},{name:"L-Theanine 200mg",note:"Alpha wave clarity for morning work block."}],warning:null },
-  { time:"9:00 AM",icon:"🍳",label:"Break Fast — Meal 1 + Morning Supps",color:"#3A8F5C",
-    supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake. Fastest leucine delivery post-fasted training."},{name:"Vitamin D3 + K2 Drops",note:"Fat-soluble — must be taken with food. Eggs + olive oil aid absorption."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"Taken with Meal 1. Saw palmetto absorbs well with food fat."},{name:"SuperBeets Chew (optional)",note:"Separate cardiovascular nitrate dose from 4 AM beet root."}],
-    warning:null },
-  { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
-    supps:[{name:"Zena Greens Organic Supergreens (1 stick pack)",note:"Mix in 8–12oz water alongside Meal 2. Probiotics peak in fed gut state. Antioxidants compound with sulforaphane from lunch vegetables. Zero sugar — no insulin spike."}],warning:null },
-  { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery Stack",color:"#4A72D4",
-    supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep. Primes overnight HGH pulse."},{name:"Magnesium Bisglycinate",note:"Deepens sleep, lowers cortisol, supports testosterone synthesis."}],warning:null },
-];
+const suppDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+const suppByDay = {
+  Mon: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue. Does not break fast."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Nitric oxide + adrenal support. Amplified fasted."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Do or Die + Strength",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"Sip throughout. 3.5 hrs fasted = high electrolyte loss."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation post-training."},{name:"L-Theanine 200mg",note:"Alpha wave clarity for deep work."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake. Fastest leucine delivery."},{name:"Vitamin D3 + K2 Drops",note:"Fat-soluble — eggs + olive oil aid absorption."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"Saw palmetto absorbs well with food fat."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose from 4 AM beet root."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In 8–12oz water alongside meal. Probiotics peak in fed state."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep. Primes HGH pulse."},{name:"Magnesium Bisglycinate",note:"Deepens sleep, lowers cortisol."}],warning:null },
+  ],
+  Tue: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue. Does not break fast."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Nitric oxide + adrenal support."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Do or Die + Power",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"Sip throughout."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation."},{name:"L-Theanine 200mg",note:"Alpha wave clarity."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake."},{name:"Vitamin D3 + K2 Drops",note:"With food fat."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With Meal 1."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep."},{name:"Magnesium Bisglycinate",note:"Deepens sleep, lowers cortisol."}],warning:null },
+  ],
+  Wed: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Especially potent for conditioning day cardio."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Conditioning Circuit",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"High loss on cardio days — prioritize."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation."},{name:"L-Theanine 200mg",note:"Alpha wave clarity."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake."},{name:"Vitamin D3 + K2 Drops",note:"With food fat."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With Meal 1."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep."},{name:"Magnesium Bisglycinate",note:"Deepens sleep. Derma roll + Briogeo wash today — magnesium supports scalp healing overnight."}],warning:null },
+  ],
+  Thu: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Nitric oxide + adrenal support."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Do or Die + Hypertrophy",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"Sip throughout."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation."},{name:"L-Theanine 200mg",note:"Alpha wave clarity."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake."},{name:"Vitamin D3 + K2 Drops",note:"With food fat."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With Meal 1."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep."},{name:"Magnesium Bisglycinate",note:"Deepens sleep, lowers cortisol."}],warning:null },
+  ],
+  Fri: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Nitric oxide + adrenal support."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Do or Die + Posterior",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"Sip throughout."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation."},{name:"L-Theanine 200mg",note:"Alpha wave clarity."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake."},{name:"Vitamin D3 + K2 Drops",note:"With food fat."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With Meal 1."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"30–60 min before sleep."},{name:"Magnesium Bisglycinate",note:"Deepens sleep. Last training night — magnesium especially critical for weekend recovery."}],warning:null },
+  ],
+  Sat: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer · Pre-Training Stack",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Dissolve under tongue."},{name:"Vitality (2 caps) — Transparent Labs",note:"Fasted at 4 AM."},{name:"Bulk Pre-Workout",note:"Training in 15 min."},{name:"Fermented Beet Root + Black Maca",note:"Potent for Operator circuit 400m run sets."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🏋️",label:"Training — Operator Circuit",color:"#B84040",
+      supps:[{name:"Water + Electrolytes",note:"Highest aerobic demand of the week — prioritize hydration."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Coffee + Focus Stack",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Amplifies fat oxidation."},{name:"L-Theanine 200mg",note:"Alpha wave clarity."}],warning:null },
+    { time:"9:00 AM",icon:"🍳",label:"Meal 1 — Break Fast",color:"#3A8F5C",
+      supps:[{name:"Grass-Fed Whey Protein Isolate",note:"In oats or shake."},{name:"Vitamin D3 + K2 Drops",note:"With food fat."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With Meal 1."},{name:"SuperBeets Chew (optional)",note:"Separate nitrate dose."}],warning:null },
+    { time:"12:00 PM",icon:"🥬",label:"Meal 2 — Supergreens",color:"#3A8F5C",
+      supps:[{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."}],warning:null },
+    { time:"5:00 PM",icon:"🔒",label:"Eating Window Closes — 24-Hr Fast Begins",color:"#1E2022",
+      supps:[{name:"Water + Electrolytes only",note:"Fast runs Sat 5 PM → Sun 5 PM. No supplements until Sunday's single meal."}],warning:null },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"Still taken during fast — does not require food. HGH pulse primed."},{name:"Magnesium Bisglycinate",note:"Still taken. Lowers cortisol, deepens sleep. Even more effective in fasted state."}],warning:null },
+  ],
+  Sun: [
+    { time:"4:00 AM",icon:"🙏",label:"Wake · Prayer — Fast Continues",color:"#6B4FBB",
+      supps:[{name:"Methylcobalamin B12 1,000mcg sublingual",note:"Only supplement before 5 PM. Does not break fast."},{name:"Water + Electrolytes all day",note:"Sea salt + lite salt. Fasted all day — electrolyte loss is real."}],warning:null },
+    { time:"4:30–8:00 AM",icon:"🧘",label:"Mobility + Recovery Session",color:"#3A8F5C",
+      supps:[{name:"No Pre-Workout today",note:"Rest day. Skip Beet Root + Maca, Pre-Workout, and L-Theanine — no training stimulus needed."}],warning:null },
+    { time:"8:00 AM",icon:"☕",label:"Black Coffee Only",color:"#C8943A",
+      supps:[{name:"Black Coffee",note:"Does not break fast. Amplifies fat oxidation and extends autophagy window."},{name:"Skip L-Theanine",note:"Optional — fine to take. Won't break fast but no training to pair it with."}],warning:null },
+    { time:"5:00 PM",icon:"🌿",label:"Break Fast — Single Autophagy Refeed Meal",color:"#6B4FBB",
+      supps:[{name:"Vitality (2 caps) — Transparent Labs",note:"Taken with meal fat (salmon + avocado + olive oil). Best absorption of the week after 24-hr fast."},{name:"Vitamin D3 + K2 Drops",note:"Fat-soluble — meal fat unlocks absorption."},{name:"DHT Blocker / Simply Revival (2 caps)",note:"With meal. No timing conflict — no morning dose was taken."},{name:"Zena Greens Supergreens (1 stick)",note:"In water alongside meal."},{name:"SuperBeets Chew (optional)",note:"With meal if desired."}],
+      warning:"⚠ All food-dependent supplements shift to this single meal. Bone broth first, then the full meal, then supps — let digestion prime before capsules." },
+    { time:"9:30 PM",icon:"🌙",label:"Pre-Sleep Recovery",color:"#4A72D4",
+      supps:[{name:"Growth Powder (Transparent Labs)",note:"HGH pulse is strongest tonight — 24-hr fast is one of the most powerful natural GH triggers. Do not skip."},{name:"Magnesium Bisglycinate",note:"Deepens sleep. Derma roll + Mielle wash tonight — supports scalp healing and full-body recovery."}],warning:null },
+  ],
+};
 
 const grocery = [
   { cat:"Proteins",emoji:"🥩",items:["Chicken breast — 1.6kg","Salmon fillet — 1.4kg (7 × 200g)","Whole eggs — 2 dozen","Egg whites (carton) — 1L","Greek yogurt (plain, full-fat) — 1.4kg"] },
@@ -242,11 +338,13 @@ export default function Protocol() {
   const [showDOD, setShowDOD] = useState(false);
   const [activeHD, setActiveHD] = useState(0);
   const [activeSD, setActiveSD] = useState(0);
+  const [activeSuppDay, setActiveSuppDay] = useState("Mon");
 
   const current = meals[day];
   const totals = calcDay(current);
   const tTot = calcDay(meals[T]);
   const rTot = calcDay(meals[R]);
+  const sTot = calcDay(meals[S]);
   const wDay = weekDays[activeWD];
   const hDay = hairDays[activeHD];
   const sDay = skinDays[activeSD];
@@ -299,8 +397,8 @@ export default function Protocol() {
           <p style={{ color:"#343638", fontSize:11, margin:"0 0 14px", maxWidth:520, lineHeight:1.7 }}>Nutrition · Supplements · Training · Recovery · Hair · Skin — one unified daily OS.</p>
           <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:16 }}>
             <div style={{ display:"inline-flex", border:"1px solid #1A1C1E", borderRadius:6, overflow:"hidden" }}>
-              {[{id:T,l:"🏋️  Training"},{id:R,l:"😴  Rest"}].map(d=>(
-                <button key={d.id} onClick={()=>{setDay(d.id);setOpenMeal(null);}} style={{ padding:"7px 15px", background:day===d.id?"#3A8F5C":"transparent", border:"none", color:day===d.id?"#07080A":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:day===d.id?700:400 }}>{d.l}</button>
+              {[{id:T,l:"🏋️  Training"},{id:R,l:"😴  Rest"},{id:S,l:"⚡  Sunday Fast"}].map(d=>(
+                <button key={d.id} onClick={()=>{setDay(d.id);setOpenMeal(null);}} style={{ padding:"7px 15px", background:day===d.id?d.id===S?"#6B4FBB":"#3A8F5C":"transparent", border:"none", color:day===d.id?"#07080A":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:day===d.id?700:400, borderRight:d.id!==S?"1px solid #1A1C1E":"none" }}>{d.l}</button>
               ))}
             </div>
             <button onClick={()=>setTab("hair")} style={{ padding:"7px 15px", background:tab==="hair"?"#C9A84C18":"#0E0F11", border:`1px solid ${tab==="hair"?"#C9A84C50":"#1A1C1E"}`, borderRadius:6, color:tab==="hair"?"#C9A84C":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>💈  Hair</button>
@@ -321,8 +419,8 @@ export default function Protocol() {
       {/* ── TAB BAR ── */}
       <div style={{ borderBottom:"1px solid #161719", background:"#090A0C", position:"sticky", top:0, zIndex:10 }}>
         <div style={{ maxWidth:880, margin:"0 auto", display:"flex", overflowX:"auto" }}>
-          {[["schedule","Schedule"],["workout","Workout"],["meals","Meals"],["supplements","Supps"],["macros","Macros"],["grocery","Grocery"],["swaps","Swaps"],["hair","💈 Hair"],["skin","✨ Skin"]].map(([id,lbl])=>{
-            const ac = id==="hair"?"#C9A84C":id==="skin"?"#E8B4D0":"#3A8F5C";
+          {[["schedule","Schedule"],["workout","Workout"],["meals","Meals"],["supplements","Supps"],["macros","Macros"],["grocery","Grocery"],["swaps","Swaps"]].map(([id,lbl])=>{
+            const ac = "#3A8F5C";
             return <button key={id} onClick={()=>setTab(id)} style={{ padding:"11px 12px", background:"none", border:"none", color:tab===id?ac:"#282A2C", fontSize:10, cursor:"pointer", letterSpacing:"0.13em", fontFamily:"monospace", textTransform:"uppercase", borderBottom:tab===id?`2px solid ${ac}`:"2px solid transparent", transition:"all 0.2s", whiteSpace:"nowrap" }}>{lbl}</button>;
           })}
         </div>
@@ -341,11 +439,12 @@ export default function Protocol() {
                 {t:"4:30 AM",icon:"🏋️",l:"Do or Die Circuit",c:"#B84040",b:"100-rep sets across 27 movements + push-up ladder."},
                 {t:"5:30 AM",icon:"💪",l:"Main Session",c:"#B84040",b:"Mon: Strength · Tue: Power · Wed: Conditioning · Thu: Hypertrophy · Fri: Posterior · Sat: Operator · Sun: Recovery."},
                 {t:"8:00 AM",icon:"☕",l:"Coffee + L-Theanine · Skin AM Begins",c:"#C8943A",b:"CeraVe BPO wash → Vit C → HA → Alpha Arbutin → Cetaphil → SPF. L-Theanine + coffee. Prime deep work window."},
-                {t:"9:00 AM",icon:"🍳",l:"Break Fast — Meal 1 + Morning Supps",c:"#3A8F5C",b:"Eggs + whey + oats + banana. D3/K2 + DHT Blocker. Anabolic window open."},
+                {t:"9:00 AM",icon:"🍳",l:"Break Fast — Meal 1 + Morning Supps",c:"#3A8F5C",b:"Eggs + whey + oats + banana. D3/K2 + DHT Blocker. Anabolic window open. (Sunday: fasting continues — water + electrolytes only until 5 PM.)"},
                 {t:"12:00 PM",icon:"🥬",l:"Meal 2 — Performance Lunch + Supergreens",c:"#3A8F5C",b:"Chicken + rice + kale + broccoli + avocado + sauerkraut. Mix Zena Greens stick in water alongside meal. Probiotics peak in fed state."},
                 {t:"2:30 PM",icon:"🍓",l:"Meal 3 — Fruit + Protein Snack",c:"#B84040",b:"Greek yogurt + mango + kiwi + pomegranate + walnuts."},
                 {t:"4:30 PM",icon:"🌿",l:"Meal 4 — Last Meal by 5 PM",c:"#6B4FBB",b:"Salmon + sweet potato + asparagus + bell pepper + turmeric."},
-                {t:"5:00 PM",icon:"🔒",l:"16-Hour Fast Begins",c:"#1E2022",b:"Water, black coffee, electrolytes only until 9 AM."},
+                {t:"5:00 PM",icon:"🔒",l:"Eating Window Closes · Sun Fast Begins",c:"#1E2022",b:"Mon–Sat: 16-hour fast begins. Water, black coffee, electrolytes only until 9 AM. Sunday only: 24-hour fast begins here (Sat 5 PM) — extends until Sun 5 PM."},
+                {t:"SUN 5 PM",icon:"🌿",l:"Sunday Only — Autophagy Refeed Meal",c:"#6B4FBB",b:"Bone broth first to prime digestion after 24 hrs. Salmon + asparagus + spinach + zucchini + avocado + olive oil + sauerkraut + supergreens. No starches — preserves autophagy state. Vitality + D3/K2 + DHT Blocker all taken here with meal fat."},
                 {t:"7:00 PM",icon:"🪡",l:"Derma Roll (Wed & Sun only)",c:"#C9A84C",b:"Sanitize → Roll → The Ordinary immediately → Root Revive → Pumpkin Seed → Jojoba → Bonnet."},
                 {t:"7:30 PM",icon:"🌙",l:"Skin PM + Hair Evening Stack",c:"#4A72D4",b:"Skin: Exfoliation (Mon/Wed/Fri), Retinol (Tue/Thu/Sat), Aztec Mask (Sun). Hair: The Ordinary → Root Revive → Pumpkin Seed → Jojoba → Bonnet."},
                 {t:"9:30 PM",icon:"🌙",l:"Pre-Sleep Recovery Stack",c:"#4A72D4",b:"Growth Powder + Magnesium Bisglycinate."},
@@ -442,15 +541,26 @@ export default function Protocol() {
         {/* ── MEALS ── */}
         {tab==="meals" && (
           <div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9, marginBottom:18 }}>
-              {[{id:T,l:"Training Day",d:tTot,c:"#3A8F5C"},{id:R,l:"Rest Day",d:rTot,c:"#6B4FBB"}].map(x=>(
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:9, marginBottom:18 }}>
+              {[{id:T,l:"Training",d:tTot,c:"#3A8F5C"},{id:R,l:"Rest Day",d:rTot,c:"#4A72D4"},{id:S,l:"Sunday Fast",d:sTot,c:"#6B4FBB"}].map(x=>(
                 <div key={x.id} onClick={()=>{setDay(x.id);setOpenMeal(null);}} style={{ padding:"13px 15px", borderRadius:10, cursor:"pointer", background:day===x.id?x.c+"10":"#0B0C0E", border:`1px solid ${day===x.id?x.c+"35":"#161719"}`, transition:"all 0.2s" }}>
-                  <div style={{ fontSize:9, color:day===x.id?x.c:"#282A2C", fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:4 }}>{x.l.toUpperCase()}</div>
-                  <div style={{ fontSize:21, color:"#EAE8E2", marginBottom:2 }}>{x.d.cal.toLocaleString()} <span style={{ fontSize:10, color:"#303234" }}>kcal</span></div>
-                  <div style={{ fontSize:10, color:"#303234", fontFamily:"monospace" }}>{x.d.p}g P · {x.d.c}g C · {x.d.f}g F</div>
+                  <div style={{ fontSize:8, color:day===x.id?x.c:"#282A2C", fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:4 }}>{x.l.toUpperCase()}</div>
+                  <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:2 }}>{x.d.cal.toLocaleString()} <span style={{ fontSize:9, color:"#303234" }}>kcal</span></div>
+                  <div style={{ fontSize:9, color:"#303234", fontFamily:"monospace" }}>{x.d.p}g P · {x.d.c}g C · {x.d.f}g F</div>
                 </div>
               ))}
             </div>
+            {day===S && (
+              <div style={{ padding:"12px 16px", background:"#0D0A1A", border:"1px solid #6B4FBB30", borderRadius:10, marginBottom:14 }}>
+                <div style={{ fontSize:9, color:"#6B4FBB", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:6 }}>⚡ 24-HOUR AUTOPHAGY FAST — SAT 5 PM → SUN 5 PM</div>
+                <div style={{ fontSize:11, color:"#4A4C4E", lineHeight:1.75 }}>
+                  Water · Black coffee · Electrolytes only until 5 PM.<br/>
+                  No supplements until the single meal (Vitality, D3/K2, DHT Blocker all taken with meal fat).<br/>
+                  B12 sublingual at 4 AM is fine — does not break the fast.<br/>
+                  Hair and skin routines proceed as normal. Mobility session as usual.
+                </div>
+              </div>
+            )}
             {current.map(meal=>{
               const mt={p:sum(meal.items,"p"),c:sum(meal.items,"c"),f:sum(meal.items,"f"),cal:sum(meal.items,"cal")};
               const isOpen=openMeal===meal.id;
@@ -519,30 +629,60 @@ export default function Protocol() {
         {/* ── SUPPLEMENTS ── */}
         {tab==="supplements" && (
           <div>
-            <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:18 }}>COMPLETE SUPPLEMENT PROTOCOL</div>
-            <div style={{ position:"relative" }}>
-              <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:"linear-gradient(to bottom,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#3A8F5C40,#4A72D440)" }} />
-              {suppSchedule.map((block,i)=>(
-                <div key={i} style={{ display:"flex", gap:13, marginBottom:4, position:"relative" }}>
-                  <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:block.color+"14", border:`1px solid ${block.color}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{block.icon}</div>
-                  <div style={{ flex:1, padding:"10px 13px", marginBottom:4, background:"#0B0C0E", border:`1px solid ${block.color}14`, borderRadius:9 }}>
-                    <div style={{ display:"flex", gap:9, alignItems:"baseline", marginBottom:7, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:11, color:block.color, fontFamily:"monospace", fontWeight:700 }}>{block.time}</span>
-                      <span style={{ fontSize:11, color:"#5A5C5E" }}>{block.label}</span>
-                    </div>
-                    {block.supps.map((s,j)=>(
-                      <div key={j} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?"1px solid #0D0E10":"none" }}>
-                        <div style={{ width:4, height:4, borderRadius:"50%", background:block.color, flexShrink:0, marginTop:4 }} />
-                        <div>
-                          <div style={{ fontSize:11, color:"#A8A6A0", marginBottom:1 }}>{s.name}</div>
-                          <div style={{ fontSize:10, color:"#2C2E30" }}>{s.note}</div>
-                        </div>
-                      </div>
-                    ))}
-                    {block.warning && <div style={{ marginTop:5, padding:"6px 9px", background:"#C8943A0E", border:"1px solid #C8943A20", borderRadius:6, fontSize:10, color:"#6A5228" }}>{block.warning}</div>}
+            <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:14 }}>SUPPLEMENT PROTOCOL — BY DAY</div>
+            {/* Day selector */}
+            <div style={{ display:"flex", gap:6, marginBottom:20, flexWrap:"wrap" }}>
+              {suppDays.map(d => {
+                const isSunday = d === "Sun";
+                const color = isSunday ? "#6B4FBB" : "#3A8F5C";
+                const isActive = activeSuppDay === d;
+                return (
+                  <button key={d} onClick={()=>setActiveSuppDay(d)} style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${isActive?color+"60":"#161719"}`, background:isActive?color+"14":"#0B0C0E", color:isActive?color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                    <div style={{ fontSize:8, opacity:0.7, marginBottom:2 }}>{d.toUpperCase()}</div>
+                    <div style={{ fontSize:9 }}>{isSunday?"⚡ FAST":"💊 STACK"}</div>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
+              {[{color:"#3A8F5C",bg:"#0A1E12",label:"Standard Stack",sub:"Mon–Sat"},{color:"#6B4FBB",bg:"#0D0A1A",label:"24-Hr Fast",sub:"Sunday only"}].map(l=>(
+                <div key={l.label} style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", background:l.bg, border:`1px solid ${l.color}25`, borderRadius:6 }}>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:l.color }} />
+                  <div>
+                    <div style={{ fontSize:8, color:l.color, fontFamily:"monospace", letterSpacing:"0.1em" }}>{l.label}</div>
+                    <div style={{ fontSize:8, color:l.color+"60" }}>{l.sub}</div>
                   </div>
                 </div>
               ))}
+            </div>
+            {/* Day stack */}
+            <div style={{ position:"relative" }}>
+              <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:"linear-gradient(to bottom,#FF6B6B30,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#4A72D440)" }} />
+              {suppByDay[activeSuppDay].map((block,i)=>{
+                const isDark = block.color==="#1E2022";
+                return (
+                  <div key={i} style={{ display:"flex", gap:13, marginBottom:4, position:"relative" }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:isDark?"#101214":block.color+"14", border:`1px solid ${isDark?"#1A1C1E":block.color+"28"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{block.icon}</div>
+                    <div style={{ flex:1, padding:"10px 13px", marginBottom:4, background:"#0B0C0E", border:`1px solid ${isDark?"#131416":block.color+"18"}`, borderRadius:9 }}>
+                      <div style={{ display:"flex", gap:9, alignItems:"baseline", marginBottom:7, flexWrap:"wrap" }}>
+                        <span style={{ fontSize:11, color:isDark?"#282A2C":block.color, fontFamily:"monospace", fontWeight:700 }}>{block.time}</span>
+                        <span style={{ fontSize:11, color:"#5A5C5E" }}>{block.label}</span>
+                      </div>
+                      {block.supps.map((s,j)=>(
+                        <div key={j} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?"1px solid #0D0E10":"none" }}>
+                          <div style={{ width:4, height:4, borderRadius:"50%", background:isDark?"#282A2C":block.color, flexShrink:0, marginTop:4 }} />
+                          <div>
+                            <div style={{ fontSize:11, color:"#A8A6A0", marginBottom:1 }}>{s.name}</div>
+                            <div style={{ fontSize:10, color:"#2C2E30" }}>{s.note}</div>
+                          </div>
+                        </div>
+                      ))}
+                      {block.warning && <div style={{ marginTop:5, padding:"6px 9px", background:"#C8943A0E", border:"1px solid #C8943A20", borderRadius:6, fontSize:10, color:"#6A5228" }}>{block.warning}</div>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -550,11 +690,11 @@ export default function Protocol() {
         {/* ── MACROS ── */}
         {tab==="macros" && (
           <div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9, marginBottom:18 }}>
-              {[{l:"Training Day",d:tTot,c:"#3A8F5C"},{l:"Rest Day",d:rTot,c:"#6B4FBB"}].map(({l,d,c})=>(
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:9, marginBottom:18 }}>
+              {[{l:"Training Day",d:tTot,c:"#3A8F5C"},{l:"Rest Day",d:rTot,c:"#4A72D4"},{l:"Sunday Fast",d:sTot,c:"#6B4FBB"}].map(({l,d,c})=>(
                 <div key={l} style={{ padding:"15px", background:"#0B0C0E", border:`1px solid ${c}18`, borderRadius:12 }}>
-                  <div style={{ fontSize:9, color:c, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:7 }}>{l.toUpperCase()}</div>
-                  <div style={{ fontSize:24, color:"#EAE8E2", marginBottom:11 }}>{d.cal.toLocaleString()} <span style={{ fontSize:10, color:"#2C2E30" }}>kcal</span></div>
+                  <div style={{ fontSize:8, color:c, fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:7 }}>{l.toUpperCase()}</div>
+                  <div style={{ fontSize:20, color:"#EAE8E2", marginBottom:11 }}>{d.cal.toLocaleString()} <span style={{ fontSize:9, color:"#2C2E30" }}>kcal</span></div>
                   {[{n:"Protein",v:d.p,c:"#B84040",m:4},{n:"Carbs",v:d.c,c:"#C8943A",m:4},{n:"Fat",v:d.f,c:"#4A72D4",m:9}].map(mac=>(
                     <div key={mac.n} style={{ marginBottom:9 }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
@@ -566,6 +706,10 @@ export default function Protocol() {
                   ))}
                 </div>
               ))}
+            </div>
+            <div style={{ padding:"10px 14px", background:"#0D0A1A", border:"1px solid #6B4FBB25", borderRadius:9, fontSize:11, color:"#4A4C4E", lineHeight:1.7 }}>
+              <span style={{ color:"#6B4FBB", fontFamily:"monospace", fontSize:8, letterSpacing:"0.14em" }}>⚡ SUNDAY FAST NOTE  </span>
+              Single meal at 5 PM breaks a 24-hr fast. No starches — autophagy is carb-sensitive. All supplements taken with this meal.
             </div>
           </div>
         )}
