@@ -129,8 +129,8 @@ const swaps = [
 // Wed = Briogeo scalp exfoliation wash (no conditioner)
 // Sun = Mielle shampoo + conditioner (moisture reset)
 const hairDays = [
-  { day:"Mon",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp — crown and thinning areas. Half a cap. Air dry 5–10 min.",note:"Never apply oils before this dries. Wash hands immediately."},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline, temples, edges. Massage 60 sec.",note:"Apply 10 min after Rogaine is fully dry."}],
+  { day:"Mon",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
+    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. Sit or work during session. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp immediately after iRestore session ends. Half a cap. Air dry 5–10 min.",note:"Never apply oils before Rogaine dries. Wash hands immediately."},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline, temples, edges. Massage 60 sec.",note:"Apply 10 min after Rogaine is fully dry."}],
     pm:[{num:"1",product:"The Ordinary Multi-Peptide Serum",instruction:"Apply to scalp in sections. Massage 60 sec. Do NOT rinse.",note:null},{num:"2",product:"PRSP Root Revive",instruction:"5–6 drops to scalp. Circular massage 90 sec.",note:null},{num:"3",product:"Pumpkin Seed Oil",instruction:"3–4 drops to scalp. Focus on thinning areas.",note:null},{num:"4",product:"Jojoba Oil",instruction:"Pea-sized to mid-lengths and ENDS ONLY. Not scalp.",note:"Seals moisture overnight."},{num:"5",product:"Satin Bonnet / Durag",instruction:"Cover before sleep.",note:null}] },
   { day:"Tue",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
     am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
@@ -141,18 +141,18 @@ const hairDays = [
     wash:[{num:"1",product:"Briogeo Scalp Revival — Charcoal + Coconut Oil",instruction:"Apply directly to wet scalp — do not dilute. Massage with fingertips in circular motion 3–5 min. Focus on any flaky, itchy, or buildup-prone areas.",note:"Charcoal draws out product buildup, excess oil, and scalp debris. Micro-exfoliating beads unclog follicles."},{num:"2",product:"Rinse Thoroughly",instruction:"Rinse well with warm water until water runs clear.",note:"No conditioner on Briogeo days — charcoal is clarifying, not moisturizing. LOC method provides the moisture."},{num:"3",product:"Rinse — Cool Water Final Rinse",instruction:"Finish with cool water to close the cuticle.",note:null}],
     loc:[{num:"L",product:"Camille Rose Curl Love (Leave-in)",instruction:"Apply section by section to damp hair. Rake through.",note:"Foundation moisture layer — extra important after charcoal wash."},{num:"O",product:"Jojoba Oil",instruction:"Small amount over Curl Love each section.",note:"Seals moisture in."},{num:"C",product:"Asiam DoubleButter Cream",instruction:"Apply and scrunch into each section.",note:"Final seal + curl definition."}],
     pm:[{num:"1",product:"Sanitize Roller",instruction:"Spray with 70% isopropyl alcohol. Wait 5 min.",note:"0.5mm or 0.75mm. Replace every 10–12 uses."},{num:"2",product:"Derma Roll Scalp",instruction:"Roll horizontally, vertically, diagonally. 4–5 passes per direction. Light pressure.",note:"Freshly exfoliated scalp = maximum penetration tonight."},{num:"3",product:"The Ordinary (immediately post-roll)",instruction:"Apply right after rolling — peptides penetrate 3–4× deeper.",note:"Best The Ordinary application of the week on Briogeo nights."},{num:"4",product:"Root Revive + Pumpkin Seed Oil",instruction:"Follow standard nightly order.",note:null},{num:"5",product:"Jojoba + Bonnet",instruction:"Seal ends. Cover. Sanitize roller after use.",note:null}] },
-  { day:"Thu",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:null}],
+  { day:"Thu",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
+    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:null},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:[{num:"1",product:"The Ordinary Multi-Peptide Serum",instruction:"Apply to scalp sections. Massage 60 sec.",note:null},{num:"2",product:"PRSP Root Revive",instruction:"5–6 drops. Circular massage 90 sec.",note:null},{num:"3",product:"Pumpkin Seed Oil",instruction:"3–4 drops to scalp.",note:null},{num:"4",product:"Jojoba Oil",instruction:"Pea-sized to ends only.",note:null},{num:"5",product:"Satin Bonnet / Durag",instruction:"Cover before sleep.",note:null}] },
   { day:"Fri",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
     am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:null}],
     pm:[{num:"1",product:"The Ordinary Multi-Peptide Serum",instruction:"Apply to scalp sections. Massage 60 sec.",note:null},{num:"2",product:"PRSP Root Revive",instruction:"5–6 drops. Circular massage 90 sec.",note:null},{num:"3",product:"Pumpkin Seed Oil",instruction:"3–4 drops to scalp.",note:null},{num:"4",product:"Jojoba Oil",instruction:"Pea-sized to ends only.",note:null},{num:"5",product:"Satin Bonnet / Durag",instruction:"Cover before sleep.",note:null}] },
-  { day:"Sat",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:null}],
+  { day:"Sat",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
+    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:null},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:[{num:"1",product:"The Ordinary Multi-Peptide Serum",instruction:"Apply to scalp sections. Massage 60 sec.",note:null},{num:"2",product:"PRSP Root Revive",instruction:"5–6 drops. Circular massage 90 sec.",note:null},{num:"3",product:"Pumpkin Seed Oil",instruction:"3–4 drops to scalp.",note:null},{num:"4",product:"Jojoba Oil",instruction:"Pea-sized to ends only.",note:null},{num:"5",product:"Satin Bonnet / Durag",instruction:"Cover before sleep.",note:null}] },
   { day:"Sun",tag:"WASH + ROLL",emoji:"💆",color:"#C8943A",type:"Moisture Reset + Derma Roll",focus:["Skip Rogaine","Mielle Shampoo + Conditioner","Derma Roll PM"],roll:true,washSteps:true,washType:"mielle",
     am:[{num:"1",product:"Copenhagen Activator ONLY — skip Rogaine",instruction:"Apply to hairline/temples as normal.",note:"⚠ SKIP Rogaine this morning. Derma roll tonight. Resume Monday 4 AM."}],
-    prewash:[{num:"1",product:"Black Castor Oil",instruction:"Section hair. Scalp massage 5–10 min.",note:"Stimulates circulation and protects roots."},{num:"2",product:"Babassu Oil",instruction:"Apply to mid-lengths and ends. Comb through.",note:"Protective barrier before shampooing."},{num:"3",product:"Wait 20–30 min",instruction:"Cover with plastic cap.",note:null}],
+    prewash:[{num:"1",product:"Black Castor Oil",instruction:"Section hair. Scalp massage 5–10 min.",note:"Stimulates circulation and protects roots."},{num:"2",product:"Batana Oil",instruction:"Apply to mid-lengths and ends. Comb through gently.",note:"Cold-pressed from American palm nuts. Rich in tocotrienols (Vit E family) and oleic acid — one of the most potent oils for hair growth and end repair."},{num:"3",product:"Wait 20–30 min",instruction:"Cover with plastic cap.",note:null}],
     wash:[{num:"1",product:"Mielle Pomegranate & Honey Shampoo — Sulfate-Free",instruction:"Apply to wet scalp and hair. Work into a lather with fingertips. Massage 2–3 min. Rinse well.",note:"Sulfate-free — gentle cleanse that preserves natural oils and moisture. Formulated for Type 4."},{num:"2",product:"Mielle Pomegranate & Honey Conditioner",instruction:"Apply generously to mid-lengths and ends. Detangle with wide-tooth comb in sections. Leave 5–10 min.",note:"Deep hydration and slip for Type 4 detangling. Restores moisture after the week."},{num:"3",product:"Rinse — Cool Water",instruction:"Cool water final rinse to seal the cuticle.",note:null}],
     loc:[{num:"L",product:"Camille Rose Curl Love (Leave-in)",instruction:"Apply section by section to damp hair. Rake through.",note:"Layer over the conditioner moisture."},{num:"O",product:"Jojoba Oil",instruction:"Small amount over Curl Love each section.",note:"Seals moisture into shaft."},{num:"C",product:"Asiam DoubleButter Cream",instruction:"Apply and scrunch in.",note:"Final seal + curl definition."}],
     pm:[{num:"1",product:"Sanitize Roller",instruction:"70% isopropyl alcohol. Wait 5 min.",note:null},{num:"2",product:"Derma Roll Scalp",instruction:"Horizontal, vertical, diagonal. 4–5 passes. Light pressure.",note:null},{num:"3",product:"The Ordinary (immediately post-roll)",instruction:"Apply immediately for maximum penetration.",note:null},{num:"4",product:"Root Revive + Pumpkin Seed Oil",instruction:"Follow standard nightly order.",note:null},{num:"5",product:"Jojoba + Bonnet",instruction:"Seal ends. Cover.",note:null}] },
@@ -160,12 +160,16 @@ const hairDays = [
 
 const hairRules = [
   {icon:"⚠",color:"#C0392B",text:"NEVER apply Rogaine within 24 hrs after derma rolling — skip Wed & Sun mornings."},
-  {icon:"⚠",color:"#C0392B",text:"NEVER apply oils to scalp before or over Rogaine — oils block minoxidil penetration."},
+  {icon:"⚠",color:"#C0392B",text:"NEVER use iRestore on derma roll days (Wed/Sun) — LLLT + microneedling same day = overstimulation."},
+  {icon:"⚠",color:"#C0392B",text:"NEVER apply oils to scalp before Rogaine or iRestore — clean dry scalp only for both."},
   {icon:"⚠",color:"#C0392B",text:"NEVER derma roll on an unwashed scalp — wash day timing is mandatory."},
-  {icon:"💡",color:"#C9A84C",text:"Wed = Briogeo (scalp exfoliation + charcoal). Sun = Mielle (moisture reset). These serve different purposes — do not swap."},
-  {icon:"💡",color:"#C9A84C",text:"No conditioner on Briogeo days — charcoal wash + LOC method is sufficient. Conditioner on Mielle days only."},
-  {icon:"✅",color:"#27AE60",text:"Freshly exfoliated scalp on Wednesday = best derma roll penetration of the week."},
+  {icon:"💡",color:"#C9A84C",text:"iRestore schedule: Mon / Thu / Sat — every other day, never on derma roll days. Always before Rogaine."},
+  {icon:"💡",color:"#C9A84C",text:"iRestore → Rogaine sequence is intentional. LLLT increases scalp receptivity — Rogaine penetrates better right after."},
+  {icon:"💡",color:"#C9A84C",text:"Wed = Briogeo (scalp exfoliation). Sun = Mielle (moisture reset). Do not swap — they serve different purposes."},
+  {icon:"💡",color:"#C9A84C",text:"No conditioner on Briogeo days — charcoal + LOC method is sufficient. Conditioner on Mielle days only."},
+  {icon:"✅",color:"#27AE60",text:"Freshly exfoliated scalp on Wednesday = best derma roll + The Ordinary penetration of the week."},
   {icon:"✅",color:"#27AE60",text:"LOC order is non-negotiable: Leave-in → Oil → Cream. Always on damp hair."},
+  {icon:"✅",color:"#27AE60",text:"Batana Oil on ends only (pre-wash). Rich in tocotrienols — superior to Babassu for growth and repair."},
 ];
 
 // ─── SKIN ───────────────────────────────────────────────────────
@@ -266,6 +270,16 @@ export default function Protocol() {
     );
   };
 
+  const laserBadge = (tag) => {
+    if (!tag.includes("LASER")) return null;
+    return (
+      <div style={{ display:"inline-flex", flexDirection:"column", padding:"5px 10px", background:"#1A0A0A", border:"1px solid #FF4D4D30", borderRadius:7, marginLeft:8 }}>
+        <span style={{ fontSize:8, color:"#FF6B6B", fontFamily:"monospace", letterSpacing:"0.14em", fontWeight:700 }}>iRESTORE</span>
+        <span style={{ fontSize:8, color:"#FF6B6B99", fontFamily:"monospace" }}>25 min LLLT</span>
+      </div>
+    );
+  };
+
   return (
     <div style={{ minHeight:"100vh", background:"#07080A", color:"#EAE8E2", fontFamily:"'Palatino Linotype', Palatino, serif", overflowX:"hidden" }}>
 
@@ -323,7 +337,7 @@ export default function Protocol() {
             <div style={{ position:"relative" }}>
               <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:"linear-gradient(to bottom,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#4A72D440,#16171940)" }} />
               {[
-                {t:"4:00 AM",icon:"🙏",l:"Wake · Prayer · Pre-Training",c:"#6B4FBB",b:"B12 sublingual. Beet Root + Maca. Pre-Workout. Hair: Rogaine to scalp (skip Wed/Sun), Copenhagen Activator 10 min later."},
+                {t:"4:00 AM",icon:"🙏",l:"Wake · Prayer · Pre-Training",c:"#6B4FBB",b:"B12 sublingual. Vitality (2 caps). Beet Root + Maca. Pre-Workout. Hair: Rogaine to scalp (skip Wed/Sun), Copenhagen Activator 10 min later."},
                 {t:"4:30 AM",icon:"🏋️",l:"Do or Die Circuit",c:"#B84040",b:"100-rep sets across 27 movements + push-up ladder."},
                 {t:"5:30 AM",icon:"💪",l:"Main Session",c:"#B84040",b:"Mon: Strength · Tue: Power · Wed: Conditioning · Thu: Hypertrophy · Fri: Posterior · Sat: Operator · Sun: Recovery."},
                 {t:"8:00 AM",icon:"☕",l:"Coffee + L-Theanine · Skin AM Begins",c:"#C8943A",b:"CeraVe BPO wash → Vit C → HA → Alpha Arbutin → Cetaphil → SPF. L-Theanine + coffee. Prime deep work window."},
@@ -601,8 +615,15 @@ export default function Protocol() {
           <div>
             <div style={{ fontSize:9, color:"#C9A84C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:5 }}>HAIR GROWTH & CARE PROTOCOL</div>
             <p style={{ fontSize:11, color:"#343638", marginBottom:10, lineHeight:1.7 }}>4c hair · Growth + Density + Scalp Health · Wash 2×/week · Derma Roll: Wed & Sun PM</p>
-            {/* Wash day legend */}
+            {/* Wash day + laser legend */}
             <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:"#1A0A0A", border:"1px solid #FF4D4D30", borderRadius:7 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:"#FF6B6B" }} />
+                <div>
+                  <div style={{ fontSize:9, color:"#FF6B6B", fontFamily:"monospace", letterSpacing:"0.1em" }}>MON / THU / SAT — iRESTORE</div>
+                  <div style={{ fontSize:9, color:"#3A2020" }}>25 min LLLT · Before Rogaine · Alternating days only</div>
+                </div>
+              </div>
               <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:"#0A1E12", border:"1px solid #27AE6030", borderRadius:7 }}>
                 <div style={{ width:8, height:8, borderRadius:"50%", background:"#27AE60" }} />
                 <div>
@@ -631,6 +652,7 @@ export default function Protocol() {
                 <div style={{ display:"flex", alignItems:"center", flexWrap:"wrap", gap:4, marginBottom:3 }}>
                   <div style={{ fontSize:9, color:hDay.color, fontFamily:"monospace", letterSpacing:"0.2em" }}>{hDay.day.toUpperCase()} · {hDay.tag}</div>
                   {washBadge(hDay.washType)}
+                  {laserBadge(hDay.tag)}
                 </div>
                 <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:5 }}>{hDay.emoji} {hDay.type}</div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{hDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:hDay.color+"12", border:`1px solid ${hDay.color}20`, fontSize:9, color:hDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
