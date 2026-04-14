@@ -1127,3 +1127,4 @@ export default function Protocol() {
       <style>{`* { box-sizing: border-box; } ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: #07080A; } ::-webkit-scrollbar-thumb { background: #1A1C1E; border-radius: 2px; } button:focus { outline: none; }`}</style>
     </div>
   );
+}
