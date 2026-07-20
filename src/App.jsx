@@ -39,6 +39,11 @@ const restToSec = (r) => {
 const WATER_TARGET = 4.0;
 const ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
+// ── THEME PALETTES: PD = dark (original), PL = light (inverted neutral ramp) ──
+const PD = {"07080A":"#07080A","09080C":"#09080C","090A0C":"#090A0C","0A0B0D":"#0A0B0D","0B0C0E":"#0B0C0E","0C0D0F":"#0C0D0F","0C100D":"#0C100D","0D0E10":"#0D0E10","0E0F10":"#0E0F10","0E0F11":"#0E0F11","101214":"#101214","131416":"#131416","141516":"#141516","161719":"#161719","1A1C1E":"#1A1C1E","202224":"#202224","242628":"#242628","282A2C":"#282A2C","2C2E30":"#2C2E30","303234":"#303234","343638":"#343638","383A3C":"#383A3C","404244":"#404244","484A4C":"#484A4C","4A4C4E":"#4A4C4E","5A5C5E":"#5A5C5E","6A6C6E":"#6A6C6E","7A7870":"#7A7870","8A8880":"#8A8880","9A9890":"#9A9890","A8A6A0":"#A8A6A0","C8C6C0":"#C8C6C0","EAE8E2":"#EAE8E2"};
+const PL = {"07080A":"#F8F7F5","09080C":"#F6F7F3","090A0C":"#F6F5F3","0A0B0D":"#F5F4F2","0B0C0E":"#F4F3F1","0C0D0F":"#F3F2F0","0C100D":"#F3EFF2","0D0E10":"#F2F1EF","0E0F10":"#F1F0EF","0E0F11":"#F1F0EE","101214":"#EFEDEB","131416":"#ECEBE9","141516":"#EBEAE9","161719":"#E9E8E6","1A1C1E":"#E5E3E1","202224":"#DFDDDB","242628":"#DBD9D7","282A2C":"#D7D5D3","2C2E30":"#D3D1CF","303234":"#CFCDCB","343638":"#CBC9C7","383A3C":"#C7C5C3","404244":"#BFBDBB","484A4C":"#B7B5B3","4A4C4E":"#B5B3B1","5A5C5E":"#A5A3A1","6A6C6E":"#959391","7A7870":"#85878F","8A8880":"#75777F","9A9890":"#65676F","A8A6A0":"#57595F","C8C6C0":"#37393F","EAE8E2":"#15171D"};
+
+
 const DOD = ["100 Reverse Plank","100 Rear Delt Flys","100 Reverse Nordics","100 Side Plank Reach","100 Pistol Squats","Nordic Ham Curls 3×8 (slow neg)","100 Neck Curls/Ext","100 Reverse Curls","100 Ab Wheel","100 Curls (var)","100 Hip Bridges","100 Leg Raises","100 Tricep Ext","100 Flys","Standard PU × 30","100 Pike PU","Close-Grip PU × 25","Decline PU × 25","Explosive PU × 20","Diamond PU × 20","Incline PU × 20","Wide PU × 20","Incline sm × 20","Archer PU × 20","Tempo PU × 20","Pseudo Planche × 20","Close-Grip PU × 20"];
 
 const weekDays = [
@@ -476,22 +481,22 @@ const neckJawRules = [
 const sum = (arr, k) => arr.reduce((a, i) => a + i[k], 0);
 const calcDay = (m) => m.reduce((a, meal) => { a.p+=sum(meal.items,"p"); a.c+=sum(meal.items,"c"); a.f+=sum(meal.items,"f"); a.cal+=sum(meal.items,"cal"); return a; }, {p:0,c:0,f:0,cal:0});
 
-const StepList = ({ steps, color }) => (
+const StepList = ({ steps, color, P }) => (
   <div>
     {steps.map((step, si) => (
-      <div key={si} style={{ display:"flex", gap:12, marginBottom:12, paddingBottom:12, borderBottom:si<steps.length-1?"1px solid #0E0F10":"none" }}>
+      <div key={si} style={{ display:"flex", gap:12, marginBottom:12, paddingBottom:12, borderBottom:si<steps.length-1?`1px solid ${P["0E0F10"]}`:"none" }}>
         <div style={{ width:26, height:26, borderRadius:"50%", background:color+"20", border:`1px solid ${color}35`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, color, fontFamily:"monospace", fontWeight:700, flexShrink:0, marginTop:2 }}>{step.num}</div>
         <div style={{ flex:1 }}>
-          <div style={{ fontSize:11, color:"#C8C6C0", marginBottom:3, fontWeight:600 }}>{step.product}</div>
-          <div style={{ fontSize:11, color:"#404244", lineHeight:1.65, marginBottom:step.note?4:0 }}>{step.instruction}</div>
-          {step.note && <div style={{ fontSize:10, color:step.note.includes("⚠")?"#C0392B":"#4A4C4E", padding:"4px 8px", background:step.note.includes("⚠")?"#1E0808":"#0A0B0D", borderLeft:`2px solid ${step.note.includes("⚠")?"#C0392B":color}40`, borderRadius:"0 4px 4px 0" }}>{step.note}</div>}
+          <div style={{ fontSize:11, color:P["C8C6C0"], marginBottom:3, fontWeight:600 }}>{step.product}</div>
+          <div style={{ fontSize:11, color:P["404244"], lineHeight:1.65, marginBottom:step.note?4:0 }}>{step.instruction}</div>
+          {step.note && <div style={{ fontSize:10, color:step.note.includes("⚠")?"#C0392B":P["4A4C4E"], padding:"4px 8px", background:step.note.includes("⚠")?"#1E0808":P["0A0B0D"], borderLeft:`2px solid ${step.note.includes("⚠")?"#C0392B":color}40`, borderRadius:"0 4px 4px 0" }}>{step.note}</div>}
         </div>
       </div>
     ))}
   </div>
 );
 
-const SecBlock = ({ label, color, children }) => (
+const SecBlock = ({ label, color, children, P }) => (
   <div style={{ marginBottom:14 }}>
     <div style={{ fontSize:8, color, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:8, paddingBottom:5, borderBottom:`1px solid ${color}20` }}>{label}</div>
     {children}
@@ -535,7 +540,7 @@ function RestTimer({ seconds, color, onClose }) {
   );
 }
 
-function FastClock() {
+function FastClock({ P }) {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 30000);
@@ -559,25 +564,25 @@ function FastClock() {
   const pct = Math.max(0, Math.min(100, Math.round(elapsed / totalWindow * 100)));
   const accent = inWindow ? "#3A8F5C" : "#6B4FBB";
   return (
-    <div style={{ marginBottom:14, background:"#0B0C0E", border:`1px solid ${accent}30`, borderRadius:12, padding:"14px 16px" }}>
+    <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${accent}30`, borderRadius:12, padding:"14px 16px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
         <div>
           <div style={{ fontSize:8, color:accent, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:3 }}>
             {isSunday ? "🔒 SUNDAY 24-HR FAST — AUTOPHAGY + HGH ACTIVE" : inWindow ? "🍽 EATING WINDOW OPEN" : "🔒 FASTING — HGH + AUTOPHAGY ACTIVE"}
           </div>
-          <div style={{ fontSize:20, color:"#EAE8E2", fontFamily:"monospace", fontWeight:700 }}>
+          <div style={{ fontSize:20, color:P["EAE8E2"], fontFamily:"monospace", fontWeight:700 }}>
             {hrs}h {mins}m
-            <span style={{ fontSize:11, color:"#484A4C", fontWeight:400, marginLeft:6 }}>
+            <span style={{ fontSize:11, color:P["484A4C"], fontWeight:400, marginLeft:6 }}>
               {isSunday && h < 17 ? "until 5 PM refeed" : inWindow ? "until 5 PM cutoff" : "until 9 AM break-fast"}
             </span>
           </div>
         </div>
         <div style={{ fontSize:24 }}>{inWindow ? "🍽" : "🌙"}</div>
       </div>
-      <div style={{ height:5, background:"#161719", borderRadius:3, overflow:"hidden" }}>
+      <div style={{ height:5, background:P["161719"], borderRadius:3, overflow:"hidden" }}>
         <div style={{ height:"100%", width:pct + "%", background:accent, borderRadius:3, transition:"width 1s" }}/>
       </div>
-      <div style={{ fontSize:9, color:"#484A4C", fontFamily:"monospace", marginTop:5 }}>
+      <div style={{ fontSize:9, color:P["484A4C"], fontFamily:"monospace", marginTop:5 }}>
         {inWindow ? "Every meal inside this window. Front-load protein early." : "Water, green tea, electrolytes only. Every hour is working for you."}
       </div>
     </div>
@@ -614,6 +619,8 @@ export default function Protocol() {
   const [sleepLog, setSleepLog] = useStored("sleep", {});
   const [history, setHistory] = useStored("history", []);
   const [lastDate, setLastDate] = useStored("lastDate", todayStr());
+  const [darkMode, setDarkMode] = useStored("dark", true);
+  const P = darkMode ? PD : PL;
 
   const current = meals[day];
   const totals = calcDay(current);
@@ -673,8 +680,19 @@ export default function Protocol() {
   const last7 = history.slice(-7);
   const avgScore = last7.length ? Math.round(last7.reduce((a, e) => a + e.score, 0) / last7.length) : 0;
 
+  // Cosmetic helpers
+  const streakLook = (n) => n >= 30 ? { c:"#FF6B4A", icon:"🔥🔥" } : n >= 7 ? { c:"#C9A84C", icon:"🔥" } : n >= 1 ? { c:"#3A8F5C", icon:"▲" } : { c:P["5A5C5E"], icon:"·" };
+  const scoreColor = (p) => p >= 80 ? "#3A8F5C" : p >= 60 ? "#C8943A" : "#B84040";
+  const todayColor = todayIsSunday ? "#6B4FBB" : todayWD.color;
+  const liveScore = Math.round((
+    Math.min(1, todayMeals.length > 0 ? todayMealDone / todayMeals.length : 0) * 0.35 +
+    Math.min(1, totalSuppsToday > 0 ? todaySuppDone / totalSuppsToday : 0) * 0.25 +
+    Math.min(1, todayExDone / 5) * 0.25 +
+    Math.min(1, water / WATER_TARGET) * 0.15
+  ) * 100);
+
   const ruleBox = (r, i) => (
-    <div key={i} style={{ padding:"8px 12px", marginBottom:5, borderRadius:7, background:r.color==="#C0392B"?"#2A1010":r.color==="#C9A84C"?"#1E1A0A":"#0A1E12", border:`1px solid ${r.color}25`, fontSize:11, color:"#6A6C6E", lineHeight:1.6 }}>
+    <div key={i} style={{ padding:"8px 12px", marginBottom:5, borderRadius:7, background:r.color==="#C0392B"?"#2A1010":r.color==="#C9A84C"?"#1E1A0A":"#0A1E12", border:`1px solid ${r.color}25`, fontSize:11, color:P["6A6C6E"], lineHeight:1.6 }}>
       <span style={{ color:r.color, marginRight:6 }}>{r.icon}</span>{r.text}
     </div>
   );
@@ -703,13 +721,13 @@ export default function Protocol() {
   };
 
   return (
-    <div style={{ minHeight:"100vh", background:"#07080A", color:"#EAE8E2", fontFamily:"Palatino Linotype, Palatino, serif", overflowX:"hidden" }}>
+    <div style={{ minHeight:"100vh", background:P["07080A"], color:P["EAE8E2"], fontFamily:"Palatino Linotype, Palatino, serif", overflowX:"hidden" }}>
       {timer && <RestTimer seconds={timer.sec} color={timer.color} onClose={()=>setTimer(null)}/>}
 
       {/* ── HEADER ── */}
-      <div style={{ background:"linear-gradient(170deg,#07080A 0%,#0C100D 50%,#09080C 100%)", borderBottom:"1px solid #161719", padding:"26px 20px 20px", position:"relative", overflow:"hidden" }}>
+      <div style={{ background:`linear-gradient(170deg,${P["07080A"]} 0%,${P["0C100D"]} 50%,${P["09080C"]} 100%)`, borderBottom:`1px solid ${P["161719"]}`, padding:"26px 20px 20px", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", inset:0, pointerEvents:"none", background:"radial-gradient(ellipse at 0% 100%,rgba(58,143,92,0.08) 0%,transparent 55%),radial-gradient(ellipse at 100% 0%,rgba(184,64,64,0.06) 0%,transparent 50%)" }} />
-        <div style={{ position:"absolute", inset:0, pointerEvents:"none", opacity:0.025, backgroundImage:"linear-gradient(#EAE8E2 1px,transparent 1px),linear-gradient(90deg,#EAE8E2 1px,transparent 1px)", backgroundSize:"44px 44px" }} />
+        <div style={{ position:"absolute", inset:0, pointerEvents:"none", opacity:0.025, backgroundImage:`linear-gradient(${P["EAE8E2"]} 1px,transparent 1px),linear-gradient(90deg,${P["EAE8E2"]} 1px,transparent 1px)`, backgroundSize:"44px 44px" }} />
         <div style={{ maxWidth:880, margin:"0 auto", position:"relative" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
             <div style={{ display:"flex", gap:5 }}>{["#3A8F5C","#C8943A","#B84040","#4A72D4"].map(c=><div key={c} style={{ width:6, height:6, borderRadius:"50%", background:c, boxShadow:`0 0 7px ${c}` }} />)}</div>
@@ -719,26 +737,28 @@ export default function Protocol() {
             <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:400, letterSpacing:"-0.03em", lineHeight:1.0, margin:"0 0 3px", fontStyle:"italic" }}>Ultimate</h1>
             <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:700, letterSpacing:"-0.03em", lineHeight:1.0, margin:0, color:"#3A8F5C" }}>Physique</h1>
           </div>
-          <p style={{ color:"#343638", fontSize:11, margin:"0 0 14px", maxWidth:520, lineHeight:1.7 }}>Nutrition · Supplements · Training · Recovery · Hair · Skin — one unified daily OS.</p>
+          <p style={{ color:P["343638"], fontSize:11, margin:"0 0 14px", maxWidth:520, lineHeight:1.7 }}>Nutrition · Supplements · Training · Recovery · Hair · Skin — one unified daily OS.</p>
           <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:16 }}>
-            <div style={{ display:"inline-flex", border:"1px solid #1A1C1E", borderRadius:6, overflow:"hidden" }}>
+            <div style={{ display:"inline-flex", border:`1px solid ${P["1A1C1E"]}`, borderRadius:6, overflow:"hidden" }}>
               {[{id:T,l:"🏋️  Training"},{id:R,l:"😴  Rest"},{id:S,l:"⚡  Sunday Fast"}].map(d=>(
-                <button key={d.id} onClick={()=>{setDay(d.id);setOpenMeal(null);}} style={{ padding:"7px 15px", background:day===d.id?d.id===S?"#6B4FBB":"#3A8F5C":"transparent", border:"none", color:day===d.id?"#07080A":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:day===d.id?700:400, borderRight:d.id!==S?"1px solid #1A1C1E":"none" }}>{d.l}</button>
+                <button key={d.id} onClick={()=>{setDay(d.id);setOpenMeal(null);}} style={{ padding:"7px 15px", background:day===d.id?d.id===S?"#6B4FBB":"#3A8F5C":"transparent", border:"none", color:day===d.id?P["07080A"]:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:day===d.id?700:400, borderRight:d.id!==S?`1px solid ${P["1A1C1E"]}`:"none" }}>{d.l}</button>
               ))}
             </div>
-            <button onClick={()=>setTab("hair")} style={{ padding:"7px 15px", background:tab==="hair"?"#C9A84C18":"#0E0F11", border:`1px solid ${tab==="hair"?"#C9A84C50":"#1A1C1E"}`, borderRadius:6, color:tab==="hair"?"#C9A84C":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>💈  Hair</button>
-            <button onClick={()=>setTab("skin")} style={{ padding:"7px 15px", background:tab==="skin"?"#E8B4D018":"#0E0F11", border:`1px solid ${tab==="skin"?"#E8B4D050":"#1A1C1E"}`, borderRadius:6, color:tab==="skin"?"#E8B4D0":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>✨  Skin</button>
-            <button onClick={()=>setTab("face")} style={{ padding:"7px 15px", background:tab==="face"?"#4A72D418":"#0E0F11", border:`1px solid ${tab==="face"?"#4A72D450":"#1A1C1E"}`, borderRadius:6, color:tab==="face"?"#4A72D4":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>🗿  Face</button>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 13px", background:"#3A8F5C14", border:"1px solid #3A8F5C35", borderRadius:6 }}>
-              <span style={{ fontSize:13, fontWeight:700, color:"#3A8F5C", fontFamily:"monospace" }}>{streak}</span>
-              <span style={{ fontSize:8, color:"#3A8F5C99", fontFamily:"monospace", letterSpacing:"0.1em" }}>DAY STREAK</span>
+            <button onClick={()=>setTab("hair")} style={{ padding:"7px 15px", background:tab==="hair"?"#C9A84C18":P["0E0F11"], border:`1px solid ${tab==="hair"?"#C9A84C50":P["1A1C1E"]}`, borderRadius:6, color:tab==="hair"?"#C9A84C":P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>💈  Hair</button>
+            <button onClick={()=>setTab("skin")} style={{ padding:"7px 15px", background:tab==="skin"?"#E8B4D018":P["0E0F11"], border:`1px solid ${tab==="skin"?"#E8B4D050":P["1A1C1E"]}`, borderRadius:6, color:tab==="skin"?"#E8B4D0":P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>✨  Skin</button>
+            <button onClick={()=>setTab("face")} style={{ padding:"7px 15px", background:tab==="face"?"#4A72D418":P["0E0F11"], border:`1px solid ${tab==="face"?"#4A72D450":P["1A1C1E"]}`, borderRadius:6, color:tab==="face"?"#4A72D4":P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>🗿  Face</button>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 13px", background:streakLook(streak).c+"14", border:`1px solid ${streakLook(streak).c}35`, borderRadius:6 }}>
+              <span style={{ fontSize:12 }}>{streakLook(streak).icon}</span>
+              <span style={{ fontSize:13, fontWeight:700, color:streakLook(streak).c, fontFamily:"monospace" }}>{streak}</span>
+              <span style={{ fontSize:8, color:streakLook(streak).c+"99", fontFamily:"monospace", letterSpacing:"0.1em" }}>DAY STREAK</span>
             </div>
+            <button onClick={()=>setDarkMode(d=>!d)} style={{ padding:"7px 13px", background:P["0E0F11"], border:`1px solid ${P["1A1C1E"]}`, borderRadius:6, color:P["EAE8E2"], fontSize:12, cursor:"pointer" }}>{darkMode ? "☀️ Light" : "🌙 Dark"}</button>
           </div>
-          <div style={{ display:"flex", flexWrap:"wrap", borderTop:"1px solid #161719", paddingTop:14 }}>
-            {[{label:"Window",val:"8 hrs",sub:"9AM–5PM",c:"#3A8F5C"},{label:"Calories",val:totals.cal.toLocaleString(),sub:"kcal",c:"#EAE8E2"},{label:"Protein",val:totals.p+"g",sub:Math.round(totals.p*4/totals.cal*100)+"%",c:"#B84040"},{label:"Carbs",val:totals.c+"g",sub:Math.round(totals.c*4/totals.cal*100)+"%",c:"#C8943A"},{label:"Fats",val:totals.f+"g",sub:Math.round(totals.f*9/totals.cal*100)+"%",c:"#4A72D4"}].map((s,i)=>(
-              <div key={s.label} style={{ paddingRight:18, marginRight:18, borderRight:i<4?"1px solid #161719":"none", marginBottom:4 }}>
-                <div style={{ fontSize:8, color:"#242628", letterSpacing:"0.2em", fontFamily:"monospace", textTransform:"uppercase", marginBottom:2 }}>{s.label}</div>
-                <div style={{ fontSize:16, color:"#EAE8E2" }}>{s.val}</div>
+          <div style={{ display:"flex", flexWrap:"wrap", borderTop:`1px solid ${P["161719"]}`, paddingTop:14 }}>
+            {[{label:"Window",val:"8 hrs",sub:"9AM–5PM",c:"#3A8F5C"},{label:"Calories",val:totals.cal.toLocaleString(),sub:"kcal",c:P["EAE8E2"]},{label:"Protein",val:totals.p+"g",sub:Math.round(totals.p*4/totals.cal*100)+"%",c:"#B84040"},{label:"Carbs",val:totals.c+"g",sub:Math.round(totals.c*4/totals.cal*100)+"%",c:"#C8943A"},{label:"Fats",val:totals.f+"g",sub:Math.round(totals.f*9/totals.cal*100)+"%",c:"#4A72D4"}].map((s,i)=>(
+              <div key={s.label} style={{ paddingRight:18, marginRight:18, borderRight:i<4?`1px solid ${P["161719"]}`:"none", marginBottom:4 }}>
+                <div style={{ fontSize:8, color:P["242628"], letterSpacing:"0.2em", fontFamily:"monospace", textTransform:"uppercase", marginBottom:2 }}>{s.label}</div>
+                <div style={{ fontSize:16, color:P["EAE8E2"] }}>{s.val}</div>
                 <div style={{ fontSize:9, color:s.c, fontFamily:"monospace" }}>{s.sub}</div>
               </div>
             ))}
@@ -747,23 +767,40 @@ export default function Protocol() {
       </div>
 
       {/* ── TAB BAR ── */}
-      <div style={{ borderBottom:"1px solid #161719", background:"#090A0C", position:"sticky", top:0, zIndex:10 }}>
+      <div style={{ borderBottom:`1px solid ${P["161719"]}`, background:P["090A0C"], position:"sticky", top:0, zIndex:10 }}>
         <div style={{ maxWidth:880, margin:"0 auto", display:"flex", overflowX:"auto" }}>
-          {[["today","Today"],["schedule","Schedule"],["workout","Workout"],["meals","Meals"],["supplements","Supps"],["report","Report"],["macros","Macros"],["grocery","Grocery"]].map(([id,lbl])=>{
+          {[["today","Today","⚡"],["schedule","Schedule","📅"],["workout","Workout","🏋️"],["meals","Meals","🍽️"],["supplements","Supps","💊"],["report","Report","📊"],["macros","Macros","📈"],["grocery","Grocery","🛒"]].map(([id,lbl,ico])=>{
             const ac = "#3A8F5C";
-            return <button key={id} onClick={()=>setTab(id)} style={{ padding:"11px 12px", background:"none", border:"none", color:tab===id?ac:"#282A2C", fontSize:10, cursor:"pointer", letterSpacing:"0.13em", fontFamily:"monospace", textTransform:"uppercase", borderBottom:tab===id?`2px solid ${ac}`:"2px solid transparent", transition:"all 0.2s", whiteSpace:"nowrap" }}>{lbl}</button>;
+            return <button key={id} onClick={()=>setTab(id)} style={{ padding:"8px 12px 9px", background:"none", border:"none", color:tab===id?ac:P["282A2C"], fontSize:10, cursor:"pointer", letterSpacing:"0.13em", fontFamily:"monospace", textTransform:"uppercase", borderBottom:tab===id?`2px solid ${ac}`:"2px solid transparent", transition:"all 0.2s", whiteSpace:"nowrap" }}><span style={{ display:"block", fontSize:13, marginBottom:2, filter:tab===id?"none":"grayscale(1) opacity(0.55)" }}>{ico}</span>{lbl}</button>;
           })}
         </div>
       </div>
 
-      <div style={{ maxWidth:880, margin:"0 auto", padding:"22px 18px 60px" }}>
+      <div key={tab} className="tabfade" style={{ maxWidth:880, margin:"0 auto", padding:"22px 18px 60px" }}>
 
         {/* ── TODAY ── */}
         {tab==="today" && (
           <div>
-            <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:12 }}>TODAY — {todayWD.day.toUpperCase()} · {todayWD.tag}</div>
+            <div style={{ fontSize:9, color:todayColor, letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:12 }}>TODAY — {todayWD.day.toUpperCase()} · {todayWD.tag}{todayIsSunday ? " · 24-HR FAST" : ""}</div>
 
-            <FastClock/>
+            {/* Daily score ring — themed to today's day color */}
+            <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+              <div style={{ position:"relative", width:124, height:124 }}>
+                <svg width="124" height="124" style={{ transform:"rotate(-90deg)" }}>
+                  <circle cx="62" cy="62" r="53" fill="none" stroke={P["161719"]} strokeWidth="9"/>
+                  <circle cx="62" cy="62" r="53" fill="none" stroke={todayColor} strokeWidth="9" strokeLinecap="round"
+                    strokeDasharray={String(2*Math.PI*53)}
+                    strokeDashoffset={String(2*Math.PI*53*(1-liveScore/100))}
+                    style={{ transition:"stroke-dashoffset 0.4s ease" }}/>
+                </svg>
+                <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ fontSize:27, fontWeight:700, fontFamily:"monospace", color:scoreColor(liveScore) }}>{liveScore}%</div>
+                  <div style={{ fontSize:7, color:P["484A4C"], fontFamily:"monospace", letterSpacing:"0.14em" }}>TODAY SCORE</div>
+                </div>
+              </div>
+            </div>
+
+            <FastClock P={P}/>
 
             {/* Progress tiles */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:6, marginBottom:14 }}>
@@ -773,10 +810,10 @@ export default function Protocol() {
                 {label:"Workout",done:todayExDone,total:todayWD.exercises.length,color:"#4A72D4"},
                 {label:"Meals",done:todayMealDone,total:todayMeals.length,color:"#3A8F5C"},
               ].map(p=>(
-                <div key={p.label} style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:8, padding:"7px 9px" }}>
-                  <div style={{ fontSize:7, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.08em", marginBottom:3 }}>{p.label}</div>
-                  <div style={{ fontSize:14, color:p.done===p.total&&p.done>0?p.color:"#EAE8E2", fontWeight:700, fontFamily:"monospace" }}>{p.done}<span style={{ fontSize:9, color:"#484A4C" }}>/{p.total}</span></div>
-                  <div style={{ height:2, background:"#161719", borderRadius:1, marginTop:3 }}>
+                <div key={p.label} style={{ background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:8, padding:"7px 9px" }}>
+                  <div style={{ fontSize:7, color:P["484A4C"], fontFamily:"monospace", letterSpacing:"0.08em", marginBottom:3 }}>{p.label}</div>
+                  <div style={{ fontSize:14, color:p.done===p.total&&p.done>0?p.color:P["EAE8E2"], fontWeight:700, fontFamily:"monospace" }}>{p.done}<span style={{ fontSize:9, color:P["484A4C"] }}>/{p.total}</span></div>
+                  <div style={{ height:2, background:P["161719"], borderRadius:1, marginTop:3 }}>
                     <div style={{ height:"100%", width:p.total>0?Math.round(p.done/p.total*100)+"%":"0%", background:p.color, borderRadius:1, transition:"width 0.3s" }}/>
                   </div>
                 </div>
@@ -787,42 +824,42 @@ export default function Protocol() {
             <div onClick={()=>{setActiveWD(todayWDIdx);setTab("workout");}} style={{ marginBottom:14, padding:"12px 15px", background:todayWD.color+"10", border:`1px solid ${todayWD.color}30`, borderRadius:10, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
               <div>
                 <div style={{ fontSize:8, color:todayWD.color, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:2 }}>TODAY'S SESSION{todayWD.dodHalf?" · DOD HALF VOLUME":""}</div>
-                <div style={{ fontSize:13, color:"#EAE8E2" }}>{todayWD.emoji} {todayWD.type}</div>
+                <div style={{ fontSize:13, color:P["EAE8E2"] }}>{todayWD.emoji} {todayWD.type}</div>
               </div>
               <span style={{ color:todayWD.color, fontSize:16 }}>→</span>
             </div>
 
             {/* Water tracker */}
-            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+            <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, padding:"13px 15px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                 <div>
                   <div style={{ fontSize:8, color:"#4A72D4", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>💧 WATER — FASTED TRAINING DEMANDS IT</div>
-                  <div style={{ fontSize:16, color:"#EAE8E2", fontFamily:"monospace", fontWeight:700 }}>{water.toFixed(2)}L <span style={{ fontSize:10, color:"#484A4C", fontWeight:400 }}>/ {WATER_TARGET}L target</span></div>
+                  <div style={{ fontSize:16, color:P["EAE8E2"], fontFamily:"monospace", fontWeight:700 }}>{water.toFixed(2)}L <span style={{ fontSize:10, color:P["484A4C"], fontWeight:400 }}>/ {WATER_TARGET}L target</span></div>
                 </div>
                 <div style={{ display:"flex", gap:6 }}>
-                  <button onClick={()=>setWater(w=>Math.max(0,Math.round((w-0.25)*100)/100))} style={{ width:32, height:32, borderRadius:8, background:"#161719", border:"none", color:"#EAE8E2", fontSize:15, cursor:"pointer" }}>−</button>
-                  <button onClick={()=>setWater(w=>Math.round((w+0.25)*100)/100)} style={{ width:32, height:32, borderRadius:8, background:"#4A72D4", border:"none", color:"#07080A", fontSize:15, fontWeight:700, cursor:"pointer" }}>+</button>
+                  <button onClick={()=>setWater(w=>Math.max(0,Math.round((w-0.25)*100)/100))} style={{ width:32, height:32, borderRadius:8, background:P["161719"], border:"none", color:P["EAE8E2"], fontSize:15, cursor:"pointer" }}>−</button>
+                  <button onClick={()=>setWater(w=>Math.round((w+0.25)*100)/100)} style={{ width:32, height:32, borderRadius:8, background:"#4A72D4", border:"none", color:P["07080A"], fontSize:15, fontWeight:700, cursor:"pointer" }}>+</button>
                 </div>
               </div>
               <div style={{ display:"flex", gap:3 }}>
                 {Array.from({length:16}).map((_,i)=>(
-                  <div key={i} style={{ flex:1, height:6, borderRadius:2, background:i<Math.round(water/WATER_TARGET*16)?"#4A72D4":"#161719", transition:"background 0.2s" }}/>
+                  <div key={i} style={{ flex:1, height:6, borderRadius:2, background:i<Math.round(water/WATER_TARGET*16)?"#4A72D4":P["161719"], transition:"background 0.2s" }}/>
                 ))}
               </div>
-              <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginTop:5 }}>Each tap = 250ml. Front-load 1L before and during the 4:30 AM session.</div>
+              <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginTop:5 }}>Each tap = 250ml. Front-load 1L before and during the 4:30 AM session.</div>
             </div>
 
             {/* Sleep log */}
-            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+            <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, padding:"13px 15px" }}>
               <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:8 }}>😴 SLEEP LOG — LAST NIGHT</div>
               <div style={{ display:"flex", gap:10 }}>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:3 }}>BEDTIME</div>
-                  <input type="time" value={todaySleep.bed} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,bed:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:"#0E0F11", border:"1px solid #161719", borderRadius:7, color:"#EAE8E2", fontSize:12, fontFamily:"monospace" }}/>
+                  <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:3 }}>BEDTIME</div>
+                  <input type="time" value={todaySleep.bed} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,bed:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:7, color:P["EAE8E2"], fontSize:12, fontFamily:"monospace" }}/>
                 </div>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:3 }}>HOURS SLEPT</div>
-                  <input type="number" step="0.5" min="0" max="12" placeholder="7.0" value={todaySleep.hours} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,hours:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:"#0E0F11", border:"1px solid #161719", borderRadius:7, color:"#EAE8E2", fontSize:12, fontFamily:"monospace" }}/>
+                  <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:3 }}>HOURS SLEPT</div>
+                  <input type="number" step="0.5" min="0" max="12" placeholder="7.0" value={todaySleep.hours} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,hours:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:7, color:P["EAE8E2"], fontSize:12, fontFamily:"monospace" }}/>
                 </div>
               </div>
               {todaySleep.hours && Number(todaySleep.hours) < 6 && (
@@ -833,29 +870,29 @@ export default function Protocol() {
             </div>
 
             {/* Supplement checklist for today */}
-            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
-              <div style={{ padding:"12px 14px", borderBottom:"1px solid #161719", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${todaySuppDone===totalSuppsToday&&totalSuppsToday>0?"#6B4FBB60":P["161719"]}`, boxShadow:todaySuppDone===totalSuppsToday&&totalSuppsToday>0?"0 0 14px #6B4FBB28":"none", borderRadius:12, overflow:"hidden", transition:"all 0.3s" }}>
+              <div style={{ padding:"12px 14px", borderBottom:`1px solid ${P["161719"]}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <div>
-                  <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>SUPPLEMENTS — {todayAbbr.toUpperCase()}</div>
-                  <div style={{ fontSize:13, color:"#EAE8E2" }}>{todaySuppDone} of {totalSuppsToday} taken</div>
+                  <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>SUPPLEMENTS — {todayAbbr.toUpperCase()}{todaySuppDone===totalSuppsToday&&totalSuppsToday>0 && <span style={{ marginLeft:6, padding:"1px 6px", background:"#6B4FBB", color:P["07080A"], borderRadius:4, fontWeight:700 }}>COMPLETE ✓</span>}</div>
+                  <div style={{ fontSize:13, color:P["EAE8E2"] }}>{todaySuppDone} of {totalSuppsToday} taken</div>
                 </div>
-                <button onClick={()=>setSuppChecked(p=>{const n={...p};Object.keys(n).forEach(k=>{if(k.indexOf(todayAbbr+"-")===0)delete n[k];});return n;})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                <button onClick={()=>setSuppChecked(p=>{const n={...p};Object.keys(n).forEach(k=>{if(k.indexOf(todayAbbr+"-")===0)delete n[k];});return n;})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
               </div>
               {todaySuppBlocks.map((block,bi)=>(
                 <div key={bi}>
-                  <div style={{ padding:"6px 14px", background:"#0D0E10", borderBottom:"1px solid #161719" }}>
-                    <span style={{ fontSize:8, color:block.color==="#1E2022"?"#484A4C":block.color, fontFamily:"monospace", letterSpacing:"0.1em" }}>{block.icon} {block.time} — {block.label}</span>
+                  <div style={{ padding:"6px 14px", background:P["0D0E10"], borderBottom:`1px solid ${P["161719"]}`, position:"sticky", top:46, zIndex:4 }}>
+                    <span style={{ fontSize:8, color:block.color==="#1E2022"?P["484A4C"]:block.color, fontFamily:"monospace", letterSpacing:"0.1em" }}>{block.icon} {block.time} — {block.label}</span>
                   </div>
                   {block.supps.map((s,si)=>{
                     const key = todayAbbr + "-" + bi + "-" + si;
                     const done = suppChecked[key];
                     const bColor = block.color==="#1E2022" ? "#4A72D4" : block.color;
                     return (
-                      <div key={si} onClick={()=>setSuppChecked(p=>({...p,[key]:!p[key]}))} style={{ padding:"9px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(bColor+"08"):"#0B0C0E", borderBottom:"1px solid #101214" }}>
-                        <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${done?bColor:"#242628"}`, background:done?bColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                          {done && <span style={{ fontSize:9, color:"#07080A" }}>✓</span>}
+                      <div key={si} onClick={()=>setSuppChecked(p=>({...p,[key]:!p[key]}))} style={{ padding:"9px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(bColor+"08"):P["0B0C0E"], borderBottom:`1px solid ${P["101214"]}` }}>
+                        <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${done?bColor:P["242628"]}`, background:done?bColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                          {done && <span style={{ fontSize:9, color:P["07080A"] }}>✓</span>}
                         </div>
-                        <span style={{ fontSize:11, color:done?"#484A4C":"#A8A6A0", textDecoration:done?"line-through":"none" }}>{s.name}</span>
+                        <span style={{ fontSize:11, color:done?P["484A4C"]:P["A8A6A0"], textDecoration:done?"line-through":"none" }}>{s.name}</span>
                       </div>
                     );
                   })}
@@ -864,26 +901,26 @@ export default function Protocol() {
             </div>
 
             {/* Meal checklist for today */}
-            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
-              <div style={{ padding:"12px 14px", borderBottom:"1px solid #161719", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${todayMealDone===todayMeals.length&&todayMeals.length>0?"#3A8F5C60":P["161719"]}`, boxShadow:todayMealDone===todayMeals.length&&todayMeals.length>0?"0 0 14px #3A8F5C28":"none", borderRadius:12, overflow:"hidden", transition:"all 0.3s" }}>
+              <div style={{ padding:"12px 14px", borderBottom:`1px solid ${P["161719"]}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <div>
-                  <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>MEALS{todayIsSunday?" — 24-HR FAST: SINGLE REFEED":""}</div>
-                  <div style={{ fontSize:13, color:"#EAE8E2" }}>{todayMealDone} of {todayMeals.length} eaten</div>
+                  <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>MEALS{todayIsSunday?" — 24-HR FAST: SINGLE REFEED":""}{todayMealDone===todayMeals.length&&todayMeals.length>0 && <span style={{ marginLeft:6, padding:"1px 6px", background:"#3A8F5C", color:P["07080A"], borderRadius:4, fontWeight:700 }}>COMPLETE ✓</span>}</div>
+                  <div style={{ fontSize:13, color:P["EAE8E2"] }}>{todayMealDone} of {todayMeals.length} eaten</div>
                 </div>
-                <button onClick={()=>setMealChecked({})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                <button onClick={()=>setMealChecked({})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
               </div>
               {todayMeals.map((meal,mi)=>{
                 const done = mealChecked[meal.id];
                 const mp = sum(meal.items,"p");
                 const mcal = sum(meal.items,"cal");
                 return (
-                  <div key={mi} onClick={()=>setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}))} style={{ padding:"11px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(meal.color+"08"):"#0B0C0E", borderBottom:"1px solid #101214" }}>
-                    <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${done?meal.color:"#242628"}`, background:done?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                      {done && <span style={{ fontSize:9, color:"#07080A" }}>✓</span>}
+                  <div key={mi} onClick={()=>setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}))} style={{ padding:"11px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(meal.color+"08"):P["0B0C0E"], borderBottom:`1px solid ${P["101214"]}` }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${done?meal.color:P["242628"]}`, background:done?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                      {done && <span style={{ fontSize:9, color:P["07080A"] }}>✓</span>}
                     </div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, color:done?"#484A4C":"#EAE8E2", textDecoration:done?"line-through":"none" }}>{meal.emoji} {meal.title}</div>
-                      <div style={{ fontSize:9, color:"#484A4C", fontFamily:"monospace" }}>{meal.time} · {mp}g protein · {mcal} kcal</div>
+                      <div style={{ fontSize:12, color:done?P["484A4C"]:P["EAE8E2"], textDecoration:done?"line-through":"none" }}>{meal.emoji} {meal.title}</div>
+                      <div style={{ fontSize:9, color:P["484A4C"], fontFamily:"monospace" }}>{meal.time} · {mp}g protein · {mcal} kcal</div>
                     </div>
                   </div>
                 );
@@ -891,9 +928,9 @@ export default function Protocol() {
             </div>
 
             {/* Notes */}
-            <div style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"12px 14px" }}>
+            <div style={{ background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, padding:"12px 14px" }}>
               <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:7 }}>TODAY'S NOTES</div>
-              <textarea value={notes[todayStr()]||""} onChange={e=>setNotes(p=>({...p,[todayStr()]:e.target.value}))} placeholder="Session feel? PRs? Energy levels? Anything to note..." style={{ width:"100%", minHeight:70, background:"transparent", border:"none", color:"#EAE8E2", fontSize:11, fontFamily:"inherit", resize:"none", outline:"none", lineHeight:1.6 }}/>
+              <textarea value={notes[todayStr()]||""} onChange={e=>setNotes(p=>({...p,[todayStr()]:e.target.value}))} placeholder="Session feel? PRs? Energy levels? Anything to note..." style={{ width:"100%", minHeight:70, background:"transparent", border:"none", color:P["EAE8E2"], fontSize:11, fontFamily:"inherit", resize:"none", outline:"none", lineHeight:1.6 }}/>
             </div>
           </div>
         )}
@@ -904,31 +941,31 @@ export default function Protocol() {
             <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:14 }}>WEEKLY REPORT CARD</div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
-              <div style={{ padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
+              <div style={{ padding:"14px", background:P["0B0C0E"], border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
                 <div style={{ fontSize:32, fontWeight:700, color:avgScore>=80?"#3A8F5C":avgScore>=60?"#C8943A":"#B84040", fontFamily:"monospace" }}>{avgScore}%</div>
-                <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.12em" }}>7-DAY COMPLIANCE</div>
+                <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", letterSpacing:"0.12em" }}>7-DAY COMPLIANCE</div>
               </div>
-              <div style={{ padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
-                <div style={{ fontSize:32, fontWeight:700, color:"#3A8F5C", fontFamily:"monospace" }}>{streak}</div>
-                <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.12em" }}>DAY STREAK (70%+ DAYS)</div>
+              <div style={{ padding:"14px", background:P["0B0C0E"], border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
+                <div style={{ fontSize:32, fontWeight:700, color:streakLook(streak).c, fontFamily:"monospace" }}>{streakLook(streak).icon} {streak}</div>
+                <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", letterSpacing:"0.12em" }}>DAY STREAK (70%+ DAYS)</div>
               </div>
             </div>
 
             {last7.length === 0 ? (
-              <div style={{ padding:"24px 18px", background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, textAlign:"center" }}>
+              <div style={{ padding:"24px 18px", background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, textAlign:"center" }}>
                 <div style={{ fontSize:28, marginBottom:8 }}>📊</div>
-                <div style={{ fontSize:13, color:"#EAE8E2", marginBottom:5 }}>No history yet</div>
-                <div style={{ fontSize:11, color:"#484A4C", lineHeight:1.6 }}>Complete your first full day of check-offs. At midnight, today's results are archived automatically and your report builds from there. Day by day. Rep by rep.</div>
+                <div style={{ fontSize:13, color:P["EAE8E2"], marginBottom:5 }}>No history yet</div>
+                <div style={{ fontSize:11, color:P["484A4C"], lineHeight:1.6 }}>Complete your first full day of check-offs. At midnight, today's results are archived automatically and your report builds from there. Day by day. Rep by rep.</div>
               </div>
             ) : (
-              <div style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
+              <div style={{ background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, overflow:"hidden" }}>
                 {last7.slice().reverse().map((e,i)=>{
                   const dayName = ABBR[new Date(e.date+"T12:00:00").getDay()];
                   return (
-                    <div key={i} style={{ padding:"12px 15px", borderBottom:"1px solid #101214", display:"flex", alignItems:"center", gap:12 }}>
+                    <div key={i} style={{ padding:"12px 15px", borderBottom:`1px solid ${P["101214"]}`, display:"flex", alignItems:"center", gap:12 }}>
                       <div style={{ minWidth:64 }}>
-                        <div style={{ fontSize:11, color:"#EAE8E2" }}>{dayName}</div>
-                        <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace" }}>{e.date.slice(5)}</div>
+                        <div style={{ fontSize:11, color:P["EAE8E2"] }}>{dayName}</div>
+                        <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace" }}>{e.date.slice(5)}</div>
                       </div>
                       <div style={{ flex:1 }}>
                         <div style={{ display:"flex", gap:8, marginBottom:4, flexWrap:"wrap" }}>
@@ -937,7 +974,7 @@ export default function Protocol() {
                           <span style={{ fontSize:9, color:"#3A8F5C", fontFamily:"monospace" }}>Meals {e.meals}/{e.mealsTotal}</span>
                           <span style={{ fontSize:9, color:"#4A72D4", fontFamily:"monospace" }}>{(e.water||0).toFixed(1)}L</span>
                         </div>
-                        <div style={{ height:4, background:"#161719", borderRadius:2 }}>
+                        <div style={{ height:4, background:P["161719"], borderRadius:2 }}>
                           <div style={{ height:"100%", width:e.score+"%", background:e.score>=80?"#3A8F5C":e.score>=60?"#C8943A":"#B84040", borderRadius:2 }}/>
                         </div>
                       </div>
@@ -949,21 +986,21 @@ export default function Protocol() {
             )}
 
             {/* Sleep history */}
-            <div style={{ marginTop:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+            <div style={{ marginTop:14, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:12, padding:"13px 15px" }}>
               <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:9 }}>😴 SLEEP — LAST 7 ENTRIES</div>
               {Object.entries(sleepLog).slice(-7).reverse().map(([date,s],i)=>(
-                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid #101214" }}>
-                  <span style={{ fontSize:10, color:"#484A4C", fontFamily:"monospace" }}>{date.slice(5)}</span>
-                  <span style={{ fontSize:10, color:"#EAE8E2", fontFamily:"monospace" }}>{s.bed||"—"} bed · {s.hours||"—"}h</span>
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:`1px solid ${P["101214"]}` }}>
+                  <span style={{ fontSize:10, color:P["484A4C"], fontFamily:"monospace" }}>{date.slice(5)}</span>
+                  <span style={{ fontSize:10, color:P["EAE8E2"], fontFamily:"monospace" }}>{s.bed||"—"} bed · {s.hours||"—"}h</span>
                   <span style={{ fontSize:10, fontFamily:"monospace", color:Number(s.hours)>=7?"#3A8F5C":Number(s.hours)>=6?"#C8943A":"#B84040" }}>{Number(s.hours)>=7?"TARGET":Number(s.hours)>=6?"OK":"LOW"}</span>
                 </div>
               ))}
-              {Object.keys(sleepLog).length===0 && <div style={{ fontSize:10, color:"#484A4C" }}>Log tonight's sleep on the Today tab.</div>}
+              {Object.keys(sleepLog).length===0 && <div style={{ fontSize:10, color:P["484A4C"] }}>Log tonight's sleep on the Today tab.</div>}
             </div>
 
-            <div style={{ marginTop:14, padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C12", borderRadius:12 }}>
+            <div style={{ marginTop:14, padding:"14px", background:P["0B0C0E"], border:"1px solid #3A8F5C12", borderRadius:12 }}>
               <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.18em", fontFamily:"monospace", marginBottom:7 }}>HOW THE SCORE WORKS</div>
-              <div style={{ fontSize:10, color:"#484A4C", lineHeight:1.7 }}>Meals 35% · Supplements 25% · Workout 25% · Water 15%. Green at 80%+, yellow at 60–79%, red below. Days at 70%+ extend your streak. History archives automatically at midnight — nothing to log manually. Grocery checks and notes are never reset.</div>
+              <div style={{ fontSize:10, color:P["484A4C"], lineHeight:1.7 }}>Meals 35% · Supplements 25% · Workout 25% · Water 15%. Green at 80%+, yellow at 60–79%, red below. Days at 70%+ extend your streak. History archives automatically at midnight — nothing to log manually. Grocery checks and notes are never reset.</div>
             </div>
           </div>
         )}
@@ -973,7 +1010,7 @@ export default function Protocol() {
           <div>
             <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:18 }}>24-HOUR DAILY BLUEPRINT</div>
             <div style={{ position:"relative" }}>
-              <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:"linear-gradient(to bottom,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#4A72D440,#16171940)" }} />
+              <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:`linear-gradient(to bottom,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#4A72D440,${P["161719"]}40)` }} />
               {[
                 {t:"4:00 AM",icon:"🙏",l:"Wake · Prayer · Pre-Training",c:"#6B4FBB",b:"B12 sublingual. Vitality (2 caps). Beet Root + Maca. Pre-Workout. No hair products — full AM hair stack moved to post-shower at 8 AM."},
                 {t:"4:30 AM",icon:"🏋️",l:"Do or Die Circuit",c:"#B84040",b:"100-rep sets across 27 movements + push-up ladder."},
@@ -991,13 +1028,13 @@ export default function Protocol() {
                 {t:"9:30 PM",icon:"😴",l:"Sleep — Lights Out",c:"#4A72D4",b:"7 hours minimum. Every rep and growth phase happens here."},
               ].map((item,i)=>(
                 <div key={i} style={{ display:"flex", gap:12, marginBottom:4, position:"relative" }}>
-                  <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:item.c==="#1E2022"?"#101214":item.c+"14", border:`1px solid ${item.c==="#1E2022"?"#1A1C1E":item.c+"28"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{item.icon}</div>
-                  <div style={{ flex:1, padding:"9px 13px", marginBottom:4, background:"#0B0C0E", border:`1px solid ${item.c==="#1E2022"?"#131416":item.c+"14"}`, borderRadius:9 }}>
+                  <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:item.c==="#1E2022"?P["101214"]:item.c+"14", border:`1px solid ${item.c==="#1E2022"?P["1A1C1E"]:item.c+"28"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{item.icon}</div>
+                  <div style={{ flex:1, padding:"9px 13px", marginBottom:4, background:P["0B0C0E"], border:`1px solid ${item.c==="#1E2022"?P["131416"]:item.c+"14"}`, borderRadius:9 }}>
                     <div style={{ display:"flex", gap:10, alignItems:"baseline", marginBottom:3, flexWrap:"wrap" }}>
-                      <span style={{ fontSize:11, color:item.c==="#1E2022"?"#282A2C":item.c, fontFamily:"monospace", fontWeight:700 }}>{item.t}</span>
-                      <span style={{ fontSize:12, color:"#6A6C6E" }}>{item.l}</span>
+                      <span style={{ fontSize:11, color:item.c==="#1E2022"?P["282A2C"]:item.c, fontFamily:"monospace", fontWeight:700 }}>{item.t}</span>
+                      <span style={{ fontSize:12, color:P["6A6C6E"] }}>{item.l}</span>
                     </div>
-                    <div style={{ fontSize:11, color:"#303234", lineHeight:1.7 }}>{item.b}</div>
+                    <div style={{ fontSize:11, color:P["303234"], lineHeight:1.7 }}>{item.b}</div>
                   </div>
                 </div>
               ))}
@@ -1011,7 +1048,7 @@ export default function Protocol() {
             <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:14 }}>DO OR DIE — 7-DAY TRAINING SPLIT</div>
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {weekDays.map((d,i)=>(
-                <button key={i} onClick={()=>setActiveWD(i)} style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${activeWD===i?d.color+"50":"#161719"}`, background:activeWD===i?d.color+"14":"#0B0C0E", color:activeWD===i?d.color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                <button key={i} onClick={()=>setActiveWD(i)} style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${activeWD===i?d.color+"50":P["161719"]}`, background:activeWD===i?d.color+"14":P["0B0C0E"], color:activeWD===i?d.color:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
                   <div style={{ fontSize:8, opacity:0.7, marginBottom:1 }}>{d.day.toUpperCase()}</div>
                   <div style={{ fontSize:10 }}>{d.emoji} {d.tag}</div>
                 </button>
@@ -1020,41 +1057,41 @@ export default function Protocol() {
             <div style={{ border:`1px solid ${wDay.color}30`, borderRadius:14, overflow:"hidden" }}>
               <div style={{ padding:"18px 20px", background:wDay.color+"10", borderBottom:`1px solid ${wDay.color}18` }}>
                 <div style={{ fontSize:9, color:wDay.color, fontFamily:"monospace", letterSpacing:"0.2em", marginBottom:5 }}>{wDay.day.toUpperCase()} · {wDay.tag}</div>
-                <div style={{ fontSize:19, color:"#EAE8E2", marginBottom:6 }}>{wDay.emoji} {wDay.type}</div>
+                <div style={{ fontSize:19, color:P["EAE8E2"], marginBottom:6 }}>{wDay.emoji} {wDay.type}</div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{wDay.muscleGroups.map(g=><span key={g} style={{ padding:"2px 8px", borderRadius:20, background:wDay.color+"12", border:`1px solid ${wDay.color}20`, fontSize:9, color:wDay.color, fontFamily:"monospace" }}>{g}</span>)}</div>
               </div>
               <div style={{ padding:"18px 20px" }}>
                 {wDay.doOrDie.length>0 && (
                   <div style={{ marginBottom:18 }}>
-                    <button onClick={()=>setShowDOD(!showDOD)} style={{ width:"100%", padding:"11px 14px", background:"#0E0F11", border:"1px solid #1A1C1E", borderRadius:10, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:showDOD?8:0 }}>
+                    <button onClick={()=>setShowDOD(!showDOD)} style={{ width:"100%", padding:"11px 14px", background:P["0E0F11"], border:`1px solid ${Object.values(dodChecked).filter(Boolean).length===DOD.length?"#B8404060":P["1A1C1E"]}`, boxShadow:Object.values(dodChecked).filter(Boolean).length===DOD.length?"0 0 14px #B8404028":"none", borderRadius:10, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:showDOD?8:0, transition:"all 0.3s" }}>
                       <div style={{ textAlign:"left" }}>
                         <div style={{ fontSize:9, color:"#B84040", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:2 }}>{wDay.dodHalf?"DO OR DIE — HALF VOLUME TODAY (50 REPS PER MOVEMENT)":"DO OR DIE CIRCUIT — FULL VOLUME"}</div>
-                        <div style={{ fontSize:11, color:"#5A5C5E" }}>{Object.values(dodChecked).filter(Boolean).length}/{DOD.length} completed{wDay.dodHalf?" · fatigue management day":" · 100-rep sets + push-up ladder"}</div>
+                        <div style={{ fontSize:11, color:P["5A5C5E"] }}>{Object.values(dodChecked).filter(Boolean).length}/{DOD.length} completed{wDay.dodHalf?" · fatigue management day":" · 100-rep sets + push-up ladder"}{Object.values(dodChecked).filter(Boolean).length===DOD.length && " · ✓ COMPLETE"}</div>
                       </div>
-                      <span style={{ color:"#282A2C", fontSize:18 }}>{showDOD?"−":"+"}</span>
+                      <span style={{ color:P["282A2C"], fontSize:18 }}>{showDOD?"−":"+"}</span>
                     </button>
                     {showDOD && (
-                      <div style={{ background:"#0B0C0E", border:"1px solid #B8404018", borderRadius:10, padding:"12px 14px" }}>
+                      <div style={{ background:P["0B0C0E"], border:"1px solid #B8404018", borderRadius:10, padding:"12px 14px" }}>
                         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(210px,1fr))", gap:5 }}>
                           {wDay.doOrDie.map((ex,i)=>{
                             const done = dodChecked[i];
                             const skipToday = ex.indexOf("Neck Curls")>=0 && (wDay.day==="Monday"||wDay.day==="Thursday");
                             return (
-                              <div key={i} onClick={()=>{if(!skipToday)setDodChecked(p=>({...p,[i]:!p[i]}));}} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 0", borderBottom:"1px solid #0E0F11", cursor:skipToday?"default":"pointer", opacity:skipToday?0.55:1 }}>
-                                <div style={{ width:15, height:15, borderRadius:"50%", border:`2px solid ${skipToday?"#1A1C1E":done?"#B84040":"#242628"}`, background:done&&!skipToday?"#B84040":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                                  {skipToday ? <span style={{ fontSize:7, color:"#343638" }}>×</span> : done && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                              <div key={i} onClick={()=>{if(!skipToday)setDodChecked(p=>({...p,[i]:!p[i]}));}} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 0", borderBottom:`1px solid ${P["0E0F11"]}`, cursor:skipToday?"default":"pointer", opacity:skipToday?0.55:1 }}>
+                                <div style={{ width:15, height:15, borderRadius:"50%", border:`2px solid ${skipToday?P["1A1C1E"]:done?"#B84040":P["242628"]}`, background:done&&!skipToday?"#B84040":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                                  {skipToday ? <span style={{ fontSize:7, color:P["343638"] }}>×</span> : done && <span style={{ fontSize:7, color:P["07080A"] }}>✓</span>}
                                 </div>
-                                <span style={{ fontSize:11, color:skipToday?"#343638":done?"#343638":"#484A4C", textDecoration:done&&!skipToday?"line-through":skipToday?"line-through":"none" }}>{ex}{skipToday && <span style={{ fontSize:8, color:"#B84040", fontFamily:"monospace", marginLeft:5 }}>SKIP — WEIGHTED NECK DAY</span>}</span>
+                                <span style={{ fontSize:11, color:skipToday?P["343638"]:done?P["343638"]:P["484A4C"], textDecoration:done&&!skipToday?"line-through":skipToday?"line-through":"none" }}>{ex}{skipToday && <span style={{ fontSize:8, color:"#B84040", fontFamily:"monospace", marginLeft:5 }}>SKIP — WEIGHTED NECK DAY</span>}</span>
                               </div>
                             );
                           })}
                         </div>
-                        <button onClick={()=>setDodChecked({})} style={{ marginTop:9, fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
+                        <button onClick={()=>setDodChecked({})} style={{ marginTop:9, fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
                       </div>
                     )}
                   </div>
                 )}
-                {wDay.circuitNote && <div style={{ padding:"10px 12px", background:wDay.color+"0A", border:`1px solid ${wDay.color}18`, borderRadius:9, marginBottom:14, fontSize:11, color:"#4A4C4E" }}><span style={{ color:wDay.color, fontFamily:"monospace", fontSize:8, letterSpacing:"0.12em" }}>CIRCUIT  </span>{wDay.circuitNote}</div>}
+                {wDay.circuitNote && <div style={{ padding:"10px 12px", background:wDay.color+"0A", border:`1px solid ${wDay.color}18`, borderRadius:9, marginBottom:14, fontSize:11, color:P["4A4C4E"] }}><span style={{ color:wDay.color, fontFamily:"monospace", fontSize:8, letterSpacing:"0.12em" }}>CIRCUIT  </span>{wDay.circuitNote}</div>}
 
                 {/* Sunday: mobility phases */}
                 {wDay.mobilityPhases ? (
@@ -1066,22 +1103,22 @@ export default function Protocol() {
                         <div style={{ padding:"10px 14px", background:ph.color+"10", borderBottom:`1px solid ${ph.color}18`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                           <div>
                             <span style={{ fontSize:8, color:ph.color, fontFamily:"monospace", letterSpacing:"0.16em" }}>{ph.phase}  </span>
-                            <span style={{ fontSize:13, color:"#EAE8E2" }}>{ph.emoji} {ph.label}</span>
+                            <span style={{ fontSize:13, color:P["EAE8E2"] }}>{ph.emoji} {ph.label}</span>
                           </div>
                           <span style={{ fontSize:9, color:ph.color, fontFamily:"monospace", padding:"2px 8px", background:ph.color+"15", borderRadius:20 }}>{ph.duration}</span>
                         </div>
                         <div style={{ padding:"12px 14px" }}>
                           {ph.movements.map((mv,mi)=>(
-                            <div key={mi} style={{ marginBottom:10, paddingBottom:10, borderBottom:mi<ph.movements.length-1?"1px solid #0D0E10":"none" }}>
+                            <div key={mi} style={{ marginBottom:10, paddingBottom:10, borderBottom:mi<ph.movements.length-1?`1px solid ${P["0D0E10"]}`:"none" }}>
                               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:4, flexWrap:"wrap", gap:6 }}>
-                                <div style={{ fontSize:12, color:"#C8C6C0", fontWeight:600 }}>{mv.name}</div>
+                                <div style={{ fontSize:12, color:P["C8C6C0"], fontWeight:600 }}>{mv.name}</div>
                                 <div style={{ display:"flex", gap:8 }}>
                                   <span style={{ fontSize:9, color:ph.color, fontFamily:"monospace" }}>{mv.sets} sets</span>
                                   <span style={{ fontSize:9, color:"#C8943A", fontFamily:"monospace" }}>{mv.reps}</span>
                                 </div>
                               </div>
                               <div style={{ fontSize:9, color:"#3A6A4C", fontFamily:"monospace", marginBottom:4 }}>{mv.focus}</div>
-                              <div style={{ fontSize:11, color:"#404244", lineHeight:1.65, marginBottom:mv.note?4:0 }}>{mv.instruction}</div>
+                              <div style={{ fontSize:11, color:P["404244"], lineHeight:1.65, marginBottom:mv.note?4:0 }}>{mv.instruction}</div>
                               {mv.note && <div style={{ fontSize:10, color:"#4A72D4", fontStyle:"italic" }}>{mv.note}</div>}
                             </div>
                           ))}
@@ -1092,14 +1129,14 @@ export default function Protocol() {
                       <div style={{ fontSize:9, color:wDay.color, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:9 }}>ADDITIONAL RECOVERY WORK</div>
                       <div style={{ overflowX:"auto" }}>
                         <table style={{ width:"100%", borderCollapse:"collapse", minWidth:400 }}>
-                          <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["Movement","Sets","Duration","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:"#242628", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
+                          <thead><tr style={{ borderBottom:`1px solid ${P["141516"]}` }}>{["Movement","Sets","Duration","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:P["242628"], fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
                           <tbody>{wDay.exercises.filter(ex=>!ex.name.startsWith("Phase")).map((ex,i)=>(
-                            <tr key={i} style={{ borderBottom:"1px solid #0D0E10" }}>
-                              <td style={{ padding:"9px 7px", fontSize:11, color:"#9A9890" }}>{ex.name}</td>
+                            <tr key={i} style={{ borderBottom:`1px solid ${P["0D0E10"]}` }}>
+                              <td style={{ padding:"9px 7px", fontSize:11, color:P["9A9890"] }}>{ex.name}</td>
                               <td style={{ padding:"9px 7px", fontSize:12, color:wDay.color, fontFamily:"monospace", textAlign:"center" }}>{ex.sets}</td>
                               <td style={{ padding:"9px 7px", fontSize:12, color:"#C8943A", fontFamily:"monospace" }}>{ex.reps}</td>
-                              <td style={{ padding:"9px 7px", fontSize:11, color:"#404244", fontFamily:"monospace", whiteSpace:"nowrap" }}>{ex.rest}</td>
-                              <td style={{ padding:"9px 7px", fontSize:10, color:"#343638" }}>{ex.focus}</td>
+                              <td style={{ padding:"9px 7px", fontSize:11, color:P["404244"], fontFamily:"monospace", whiteSpace:"nowrap" }}>{ex.rest}</td>
+                              <td style={{ padding:"9px 7px", fontSize:10, color:P["343638"] }}>{ex.focus}</td>
                             </tr>
                           ))}</tbody>
                         </table>
@@ -1111,26 +1148,26 @@ export default function Protocol() {
                     <div style={{ fontSize:9, color:wDay.color, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:9 }}>MAIN SESSION</div>
                     <div style={{ overflowX:"auto" }}>
                       <table style={{ width:"100%", borderCollapse:"collapse", minWidth:520 }}>
-                        <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["✓","Exercise","Sets","Reps","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:"#242628", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
+                        <thead><tr style={{ borderBottom:`1px solid ${P["141516"]}` }}>{["✓","Exercise","Sets","Reps","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:P["242628"], fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
                         <tbody>{wDay.exercises.map((ex,i)=>{
                           const exKey = wDay.day + "-" + i;
                           const exDone = exChecked[exKey];
                           const rSec = restToSec(ex.rest);
                           return (
-                          <tr key={i} style={{ borderBottom:"1px solid #0D0E10", background:exDone?wDay.color+"08":"transparent" }}>
+                          <tr key={i} style={{ borderBottom:`1px solid ${P["0D0E10"]}`, background:exDone?wDay.color+"08":"transparent" }}>
                             <td style={{ padding:"9px 7px", verticalAlign:"top" }}>
-                              <div onClick={()=>setExChecked(p=>({...p,[exKey]:!p[exKey]}))} style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${exDone?wDay.color:"#242628"}`, background:exDone?wDay.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", transition:"all 0.15s" }}>
-                                {exDone && <span style={{ fontSize:8, color:"#07080A" }}>✓</span>}
+                              <div onClick={()=>setExChecked(p=>({...p,[exKey]:!p[exKey]}))} style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${exDone?wDay.color:P["242628"]}`, background:exDone?wDay.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", transition:"all 0.15s" }}>
+                                {exDone && <span style={{ fontSize:8, color:P["07080A"] }}>✓</span>}
                               </div>
                             </td>
-                            <td style={{ padding:"9px 7px", fontSize:11, color:exDone?"#484A4C":"#9A9890", textDecoration:exDone?"line-through":"none" }}>{ex.name}</td>
+                            <td style={{ padding:"9px 7px", fontSize:11, color:exDone?P["484A4C"]:P["9A9890"], textDecoration:exDone?"line-through":"none" }}>{ex.name}</td>
                             <td style={{ padding:"9px 7px", fontSize:12, color:wDay.color, fontFamily:"monospace", textAlign:"center" }}>{ex.sets}</td>
                             <td style={{ padding:"9px 7px", fontSize:12, color:"#C8943A", fontFamily:"monospace" }}>{ex.reps}</td>
-                            <td style={{ padding:"9px 7px", fontSize:11, color:"#404244", fontFamily:"monospace", whiteSpace:"nowrap" }}>
+                            <td style={{ padding:"9px 7px", fontSize:11, color:P["404244"], fontFamily:"monospace", whiteSpace:"nowrap" }}>
                               {ex.rest}
                               {rSec > 0 && <button onClick={()=>setTimer({sec:rSec,color:wDay.color})} style={{ display:"block", marginTop:4, padding:"3px 8px", borderRadius:6, background:wDay.color+"14", border:`1px solid ${wDay.color}25`, color:wDay.color, fontSize:8, cursor:"pointer", fontFamily:"monospace" }}>⏱ START</button>}
                             </td>
-                            <td style={{ padding:"9px 7px", fontSize:10, color:"#343638" }}>{ex.focus}</td>
+                            <td style={{ padding:"9px 7px", fontSize:10, color:P["343638"] }}>{ex.focus}</td>
                           </tr>
                           );
                         })}</tbody>
@@ -1140,9 +1177,9 @@ export default function Protocol() {
                 )}
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9 }}>
                   {[{c:"#3A8F5C",label:"NUTRITION NOTE",text:wDay.nutrition},{c:"#6B4FBB",label:"SUPPLEMENT NOTE",text:wDay.suppNote}].map(b=>(
-                    <div key={b.label} style={{ padding:"11px 13px", background:"#0E0F11", border:`1px solid ${b.c}16`, borderRadius:9 }}>
+                    <div key={b.label} style={{ padding:"11px 13px", background:P["0E0F11"], border:`1px solid ${b.c}16`, borderRadius:9 }}>
                       <div style={{ fontSize:8, color:b.c, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:5 }}>{b.label}</div>
-                      <div style={{ fontSize:11, color:"#404244", lineHeight:1.65 }}>{b.text}</div>
+                      <div style={{ fontSize:11, color:P["404244"], lineHeight:1.65 }}>{b.text}</div>
                     </div>
                   ))}
                 </div>
@@ -1156,15 +1193,15 @@ export default function Protocol() {
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:9, marginBottom:18 }}>
               {[{id:T,l:"Training",d:tTot,c:"#3A8F5C"},{id:R,l:"Rest Day",d:rTot,c:"#4A72D4"},{id:S,l:"Sunday Fast",d:sTot,c:"#6B4FBB"}].map(x=>(
-                <div key={x.id} onClick={()=>{setDay(x.id);setOpenMeal(null);}} style={{ padding:"13px 15px", borderRadius:10, cursor:"pointer", background:day===x.id?x.c+"10":"#0B0C0E", border:`1px solid ${day===x.id?x.c+"35":"#161719"}`, transition:"all 0.2s" }}>
-                  <div style={{ fontSize:8, color:day===x.id?x.c:"#282A2C", fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:4 }}>{x.l.toUpperCase()}</div>
-                  <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:2 }}>{x.d.cal.toLocaleString()} <span style={{ fontSize:9, color:"#303234" }}>kcal</span></div>
-                  <div style={{ fontSize:9, color:"#303234", fontFamily:"monospace" }}>{x.d.p}g P · {x.d.c}g C · {x.d.f}g F</div>
+                <div key={x.id} onClick={()=>{setDay(x.id);setOpenMeal(null);}} style={{ padding:"13px 15px", borderRadius:10, cursor:"pointer", background:day===x.id?x.c+"10":P["0B0C0E"], border:`1px solid ${day===x.id?x.c+"35":P["161719"]}`, transition:"all 0.2s" }}>
+                  <div style={{ fontSize:8, color:day===x.id?x.c:P["282A2C"], fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:4 }}>{x.l.toUpperCase()}</div>
+                  <div style={{ fontSize:18, color:P["EAE8E2"], marginBottom:2 }}>{x.d.cal.toLocaleString()} <span style={{ fontSize:9, color:P["303234"] }}>kcal</span></div>
+                  <div style={{ fontSize:9, color:P["303234"], fontFamily:"monospace" }}>{x.d.p}g P · {x.d.c}g C · {x.d.f}g F</div>
                 </div>
               ))}
             </div>
             {/* Running totals from checked meals */}
-            <div style={{ padding:"10px 14px", background:"#0B0C0E", border:"1px solid #161719", borderRadius:9, marginBottom:14 }}>
+            <div style={{ padding:"10px 14px", background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:9, marginBottom:14 }}>
               <div style={{ fontSize:8, color:"#3A8F5C", fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:6 }}>RUNNING TOTALS — {current.filter(m=>mealChecked[m.id]).length}/{current.length} MEALS EATEN (TAP CIRCLES BELOW)</div>
               <div style={{ display:"flex", gap:12 }}>
                 {(()=>{
@@ -1177,9 +1214,9 @@ export default function Protocol() {
                     {l:"Calories",v:t2.cal,max:totals.cal,c:"#3A8F5C"},
                   ].map(macro=>(
                     <div key={macro.l} style={{ flex:1 }}>
-                      <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:2 }}>{macro.l}</div>
-                      <div style={{ fontSize:12, color:macro.c, fontFamily:"monospace" }}>{macro.v}<span style={{ fontSize:7, color:"#2C2E30" }}>/{macro.max}</span></div>
-                      <div style={{ height:2, background:"#161719", borderRadius:1, marginTop:2 }}>
+                      <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:2 }}>{macro.l}</div>
+                      <div style={{ fontSize:12, color:macro.c, fontFamily:"monospace" }}>{macro.v}<span style={{ fontSize:7, color:P["2C2E30"] }}>/{macro.max}</span></div>
+                      <div style={{ height:2, background:P["161719"], borderRadius:1, marginTop:2 }}>
                         <div style={{ height:"100%", width:Math.min(100,macro.max>0?Math.round(macro.v/macro.max*100):0)+"%", background:macro.c, borderRadius:1 }}/>
                       </div>
                     </div>
@@ -1190,7 +1227,7 @@ export default function Protocol() {
             {day===S && (
               <div style={{ padding:"12px 16px", background:"#0D0A1A", border:"1px solid #6B4FBB30", borderRadius:10, marginBottom:14 }}>
                 <div style={{ fontSize:9, color:"#6B4FBB", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:6 }}>⚡ 24-HOUR AUTOPHAGY FAST — SAT 5 PM → SUN 5 PM</div>
-                <div style={{ fontSize:11, color:"#4A4C4E", lineHeight:1.75 }}>
+                <div style={{ fontSize:11, color:P["4A4C4E"], lineHeight:1.75 }}>
                   Water + green tea + electrolytes only until 5 PM.<br/>
                   All food-dependent supps shift to the 5 PM meal.<br/>
                   B12 sublingual at 4 AM is fine — does not break the fast.<br/>
@@ -1203,32 +1240,32 @@ export default function Protocol() {
               const isOpen=openMeal===meal.id;
               const isSupergreens = meal.id==="m2"||meal.id==="r2";
               return (
-                <div key={meal.id} style={{ marginBottom:7, border:`1px solid ${isOpen?meal.color+"30":"#161719"}`, borderRadius:12, overflow:"hidden", background:isOpen?"#0C0D0F":"#0B0C0E" }}>
+                <div key={meal.id} style={{ marginBottom:7, border:`1px solid ${isOpen?meal.color+"30":P["161719"]}`, borderRadius:12, overflow:"hidden", background:isOpen?P["0C0D0F"]:P["0B0C0E"] }}>
                   <div onClick={()=>setOpenMeal(isOpen?null:meal.id)} style={{ padding:"13px 17px", cursor:"pointer", display:"flex", alignItems:"center", gap:11 }}>
-                    <div onClick={(e)=>{e.stopPropagation();setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}));}} style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${mealChecked[meal.id]?meal.color:"#242628"}`, background:mealChecked[meal.id]?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                      {mealChecked[meal.id] && <span style={{ fontSize:10, color:"#07080A" }}>✓</span>}
+                    <div onClick={(e)=>{e.stopPropagation();setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}));}} style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${mealChecked[meal.id]?meal.color:P["242628"]}`, background:mealChecked[meal.id]?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                      {mealChecked[meal.id] && <span style={{ fontSize:10, color:P["07080A"] }}>✓</span>}
                     </div>
                     <div style={{ width:38, height:38, borderRadius:8, background:meal.color+"14", border:`1px solid ${meal.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{meal.emoji}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ display:"flex", gap:7, alignItems:"center", marginBottom:1, flexWrap:"wrap" }}>
                         <span style={{ fontSize:8, color:meal.color, fontFamily:"monospace", letterSpacing:"0.16em" }}>{meal.label}</span>
-                        <span style={{ fontSize:8, color:"#2C2E30", fontFamily:"monospace" }}>{meal.time}</span>
+                        <span style={{ fontSize:8, color:P["2C2E30"], fontFamily:"monospace" }}>{meal.time}</span>
                         {isSupergreens && <span style={{ fontSize:8, color:"#27AE60", fontFamily:"monospace", padding:"1px 6px", background:"#0A1E12", border:"1px solid #27AE6030", borderRadius:4 }}>🥬 SUPERGREENS</span>}
                       </div>
-                      <div style={{ fontSize:13, color:"#EAE8E2" }}>{meal.title}</div>
+                      <div style={{ fontSize:13, color:P["EAE8E2"] }}>{meal.title}</div>
                     </div>
                     <div style={{ display:"flex", gap:10, alignItems:"center" }}>
                       {[{l:"P",v:mt.p,c:"#B84040"},{l:"C",v:mt.c,c:"#C8943A"},{l:"F",v:mt.f,c:"#4A72D4"}].map(m=>(
                         <div key={m.l} style={{ textAlign:"center" }}>
                           <div style={{ fontSize:7, color:m.c, fontFamily:"monospace" }}>{m.l}</div>
-                          <div style={{ fontSize:11, color:"#7A7870", fontFamily:"monospace" }}>{m.v}g</div>
+                          <div style={{ fontSize:11, color:P["7A7870"], fontFamily:"monospace" }}>{m.v}g</div>
                         </div>
                       ))}
                       <div style={{ textAlign:"center" }}>
                         <div style={{ fontSize:7, color:"#1E2022", fontFamily:"monospace" }}>CAL</div>
-                        <div style={{ fontSize:11, color:"#EAE8E2", fontFamily:"monospace" }}>{mt.cal}</div>
+                        <div style={{ fontSize:11, color:P["EAE8E2"], fontFamily:"monospace" }}>{mt.cal}</div>
                       </div>
-                      <span style={{ color:"#202224", fontSize:16 }}>{isOpen?"−":"+"}</span>
+                      <span style={{ color:P["202224"], fontSize:16 }}>{isOpen?"−":"+"}</span>
                     </div>
                   </div>
                   {isOpen && (
@@ -1236,27 +1273,27 @@ export default function Protocol() {
                       {isSupergreens && (
                         <div style={{ padding:"8px 12px", background:"#0A1E12", border:"1px solid #27AE6025", borderRadius:7, marginBottom:11, fontSize:11, color:"#27AE60" }}>
                           <span style={{ fontFamily:"monospace", fontSize:8, letterSpacing:"0.12em", display:"block", marginBottom:3 }}>🥬 ZENA GREENS — MIX IN WATER ALONGSIDE THIS MEAL</span>
-                          <span style={{ color:"#404244", fontSize:11 }}>1 stick pack in 8–12oz water. Probiotics peak in the fed gut state. Antioxidants compound with sulforaphane from broccoli + kale. Zero sugar — no insulin impact.</span>
+                          <span style={{ color:P["404244"], fontSize:11 }}>1 stick pack in 8–12oz water. Probiotics peak in the fed gut state. Antioxidants compound with sulforaphane from broccoli + kale. Zero sugar — no insulin impact.</span>
                         </div>
                       )}
                       <table style={{ width:"100%", borderCollapse:"collapse", marginBottom:11 }}>
-                        <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["Ingredient","Amount","P","C","F","Cal"].map(h=><th key={h} style={{ padding:"4px", textAlign:h==="Ingredient"||h==="Amount"?"left":"right", fontSize:7, color:"#202224", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
+                        <thead><tr style={{ borderBottom:`1px solid ${P["141516"]}` }}>{["Ingredient","Amount","P","C","F","Cal"].map(h=><th key={h} style={{ padding:"4px", textAlign:h==="Ingredient"||h==="Amount"?"left":"right", fontSize:7, color:P["202224"], fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
                         <tbody>{meal.items.map((item,i)=>(
-                          <tr key={i} style={{ borderBottom:"1px solid #0C0D0F", background:item.name.includes("Zena")?"#0A1E12":"transparent" }}>
-                            <td style={{ padding:"6px 4px", fontSize:11, color:item.name.includes("Zena")?"#27AE60":"#8A8880" }}>{item.name}</td>
-                            <td style={{ padding:"6px 4px", fontSize:9, color:"#2C2E30", fontFamily:"monospace" }}>{item.amt}</td>
+                          <tr key={i} style={{ borderBottom:`1px solid ${P["0C0D0F"]}`, background:item.name.includes("Zena")?"#0A1E12":"transparent" }}>
+                            <td style={{ padding:"6px 4px", fontSize:11, color:item.name.includes("Zena")?"#27AE60":P["8A8880"] }}>{item.name}</td>
+                            <td style={{ padding:"6px 4px", fontSize:9, color:P["2C2E30"], fontFamily:"monospace" }}>{item.amt}</td>
                             <td style={{ padding:"6px 4px", textAlign:"right", fontSize:9, color:"#B84040", fontFamily:"monospace" }}>{item.p}</td>
                             <td style={{ padding:"6px 4px", textAlign:"right", fontSize:9, color:"#C8943A", fontFamily:"monospace" }}>{item.c}</td>
                             <td style={{ padding:"6px 4px", textAlign:"right", fontSize:9, color:"#4A72D4", fontFamily:"monospace" }}>{item.f}</td>
-                            <td style={{ padding:"6px 4px", textAlign:"right", fontSize:9, color:"#383A3C", fontFamily:"monospace" }}>{item.cal}</td>
+                            <td style={{ padding:"6px 4px", textAlign:"right", fontSize:9, color:P["383A3C"], fontFamily:"monospace" }}>{item.cal}</td>
                           </tr>
                         ))}</tbody>
                       </table>
-                      <div style={{ background:meal.color+"07", border:`1px solid ${meal.color}12`, borderRadius:7, padding:"8px 11px", marginBottom:9, fontSize:11, color:"#404244", lineHeight:1.7 }}>
+                      <div style={{ background:meal.color+"07", border:`1px solid ${meal.color}12`, borderRadius:7, padding:"8px 11px", marginBottom:9, fontSize:11, color:P["404244"], lineHeight:1.7 }}>
                         <span style={{ color:meal.color, fontFamily:"monospace", fontSize:7, letterSpacing:"0.12em" }}>NOTE  </span>{meal.note}
                       </div>
                       <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
-                        {meal.keys.map(k=><span key={k} style={{ padding:"2px 7px", borderRadius:20, background:"#0D0E10", border:"1px solid #161719", fontSize:8, color:"#2C2E30", fontFamily:"monospace" }}>{k}</span>)}
+                        {meal.keys.map(k=><span key={k} style={{ padding:"2px 7px", borderRadius:20, background:P["0D0E10"], border:`1px solid ${P["161719"]}`, fontSize:8, color:P["2C2E30"], fontFamily:"monospace" }}>{k}</span>)}
                       </div>
                     </div>
                   )}
@@ -1277,7 +1314,7 @@ export default function Protocol() {
                 const color = isSunday ? "#6B4FBB" : "#3A8F5C";
                 const isActive = activeSuppDay === d;
                 return (
-                  <button key={d} onClick={()=>setActiveSuppDay(d)} style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${isActive?color+"60":"#161719"}`, background:isActive?color+"14":"#0B0C0E", color:isActive?color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                  <button key={d} onClick={()=>setActiveSuppDay(d)} style={{ padding:"8px 12px", borderRadius:8, border:`1px solid ${isActive?color+"60":P["161719"]}`, background:isActive?color+"14":P["0B0C0E"], color:isActive?color:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
                     <div style={{ fontSize:8, opacity:0.7, marginBottom:2 }}>{d.toUpperCase()}</div>
                     <div style={{ fontSize:9 }}>{isSunday?"⚡ FAST":"💊 STACK"}</div>
                   </button>
@@ -1303,24 +1340,24 @@ export default function Protocol() {
                 const isDark = block.color==="#1E2022";
                 return (
                   <div key={i} style={{ display:"flex", gap:13, marginBottom:4, position:"relative" }}>
-                    <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:isDark?"#101214":block.color+"14", border:`1px solid ${isDark?"#1A1C1E":block.color+"28"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{block.icon}</div>
-                    <div style={{ flex:1, padding:"10px 13px", marginBottom:4, background:"#0B0C0E", border:`1px solid ${isDark?"#131416":block.color+"18"}`, borderRadius:9 }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", flexShrink:0, background:isDark?P["101214"]:block.color+"14", border:`1px solid ${isDark?P["1A1C1E"]:block.color+"28"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, zIndex:1 }}>{block.icon}</div>
+                    <div style={{ flex:1, padding:"10px 13px", marginBottom:4, background:P["0B0C0E"], border:`1px solid ${isDark?P["131416"]:block.color+"18"}`, borderRadius:9 }}>
                       <div style={{ display:"flex", gap:9, alignItems:"baseline", marginBottom:7, flexWrap:"wrap" }}>
-                        <span style={{ fontSize:11, color:isDark?"#282A2C":block.color, fontFamily:"monospace", fontWeight:700 }}>{block.time}</span>
-                        <span style={{ fontSize:11, color:"#5A5C5E" }}>{block.label}</span>
+                        <span style={{ fontSize:11, color:isDark?P["282A2C"]:block.color, fontFamily:"monospace", fontWeight:700 }}>{block.time}</span>
+                        <span style={{ fontSize:11, color:P["5A5C5E"] }}>{block.label}</span>
                       </div>
                       {block.supps.map((s,j)=>{
                         const sKey = activeSuppDay + "-" + i + "-" + j;
                         const sDone = suppChecked[sKey];
                         const sColor = isDark ? "#4A72D4" : block.color;
                         return (
-                        <div key={j} onClick={()=>setSuppChecked(p=>({...p,[sKey]:!p[sKey]}))} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?"1px solid #0D0E10":"none", cursor:"pointer" }}>
-                          <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${sDone?sColor:"#242628"}`, background:sDone?sColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1, transition:"all 0.15s" }}>
-                            {sDone && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                        <div key={j} onClick={()=>setSuppChecked(p=>({...p,[sKey]:!p[sKey]}))} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?`1px solid ${P["0D0E10"]}`:"none", cursor:"pointer" }}>
+                          <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${sDone?sColor:P["242628"]}`, background:sDone?sColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1, transition:"all 0.15s" }}>
+                            {sDone && <span style={{ fontSize:7, color:P["07080A"] }}>✓</span>}
                           </div>
                           <div>
-                            <div style={{ fontSize:11, color:sDone?"#484A4C":"#A8A6A0", marginBottom:1, textDecoration:sDone?"line-through":"none" }}>{s.name}</div>
-                            <div style={{ fontSize:10, color:"#2C2E30" }}>{s.note}</div>
+                            <div style={{ fontSize:11, color:sDone?P["484A4C"]:P["A8A6A0"], marginBottom:1, textDecoration:sDone?"line-through":"none" }}>{s.name}</div>
+                            <div style={{ fontSize:10, color:P["2C2E30"] }}>{s.note}</div>
                           </div>
                         </div>
                         );
@@ -1339,22 +1376,22 @@ export default function Protocol() {
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:9, marginBottom:18 }}>
               {[{l:"Training Day",d:tTot,c:"#3A8F5C"},{l:"Rest Day",d:rTot,c:"#4A72D4"},{l:"Sunday Fast",d:sTot,c:"#6B4FBB"}].map(({l,d,c})=>(
-                <div key={l} style={{ padding:"15px", background:"#0B0C0E", border:`1px solid ${c}18`, borderRadius:12 }}>
+                <div key={l} style={{ padding:"15px", background:P["0B0C0E"], border:`1px solid ${c}18`, borderRadius:12 }}>
                   <div style={{ fontSize:8, color:c, fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:7 }}>{l.toUpperCase()}</div>
-                  <div style={{ fontSize:20, color:"#EAE8E2", marginBottom:11 }}>{d.cal.toLocaleString()} <span style={{ fontSize:9, color:"#2C2E30" }}>kcal</span></div>
+                  <div style={{ fontSize:20, color:P["EAE8E2"], marginBottom:11 }}>{d.cal.toLocaleString()} <span style={{ fontSize:9, color:P["2C2E30"] }}>kcal</span></div>
                   {[{n:"Protein",v:d.p,c:"#B84040",m:4},{n:"Carbs",v:d.c,c:"#C8943A",m:4},{n:"Fat",v:d.f,c:"#4A72D4",m:9}].map(mac=>(
                     <div key={mac.n} style={{ marginBottom:9 }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                        <span style={{ fontSize:11, color:"#404244" }}>{mac.n}</span>
+                        <span style={{ fontSize:11, color:P["404244"] }}>{mac.n}</span>
                         <span style={{ fontSize:10, color:mac.c, fontFamily:"monospace" }}>{mac.v}g · {Math.round(mac.v*mac.m/d.cal*100)}%</span>
                       </div>
-                      <div style={{ height:3, background:"#141516", borderRadius:2 }}><div style={{ height:"100%", width:`${Math.round(mac.v*mac.m/d.cal*100)}%`, background:mac.c, borderRadius:2 }} /></div>
+                      <div style={{ height:3, background:P["141516"], borderRadius:2 }}><div style={{ height:"100%", width:`${Math.round(mac.v*mac.m/d.cal*100)}%`, background:mac.c, borderRadius:2 }} /></div>
                     </div>
                   ))}
                 </div>
               ))}
             </div>
-            <div style={{ padding:"10px 14px", background:"#0D0A1A", border:"1px solid #6B4FBB25", borderRadius:9, fontSize:11, color:"#4A4C4E", lineHeight:1.7 }}>
+            <div style={{ padding:"10px 14px", background:"#0D0A1A", border:"1px solid #6B4FBB25", borderRadius:9, fontSize:11, color:P["4A4C4E"], lineHeight:1.7 }}>
               <span style={{ color:"#6B4FBB", fontFamily:"monospace", fontSize:8, letterSpacing:"0.14em" }}>⚡ SUNDAY FAST NOTE  </span>
               Single meal at 5 PM breaks a 24-hr fast. No starches — autophagy is carb-sensitive. All supplements taken with this meal.
             </div>
@@ -1365,31 +1402,31 @@ export default function Protocol() {
         {tab==="grocery" && (
           <div>
             {/* Internal sub-tabs */}
-            <div style={{ display:"inline-flex", border:"1px solid #1A1C1E", borderRadius:7, overflow:"hidden", marginBottom:18 }}>
+            <div style={{ display:"inline-flex", border:`1px solid ${P["1A1C1E"]}`, borderRadius:7, overflow:"hidden", marginBottom:18 }}>
               {[{id:"list",l:"🛒  Grocery List"},{id:"swaps",l:"🔄  Swaps"}].map(v=>(
-                <button key={v.id} onClick={()=>setGroceryView(v.id)} style={{ padding:"8px 18px", background:groceryView===v.id?"#3A8F5C":"transparent", border:"none", color:groceryView===v.id?"#07080A":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:groceryView===v.id?700:400, borderRight:v.id==="list"?"1px solid #1A1C1E":"none" }}>{v.l}</button>
+                <button key={v.id} onClick={()=>setGroceryView(v.id)} style={{ padding:"8px 18px", background:groceryView===v.id?"#3A8F5C":"transparent", border:"none", color:groceryView===v.id?P["07080A"]:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s", fontWeight:groceryView===v.id?700:400, borderRight:v.id==="list"?`1px solid ${P["1A1C1E"]}`:"none" }}>{v.l}</button>
               ))}
             </div>
             {groceryView==="list" && (
               <div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
                   <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace" }}>WEEKLY GROCERY LIST</div>
-                  <button onClick={()=>setGroceryChecked({})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
+                  <button onClick={()=>setGroceryChecked({})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
                 </div>
                 {grocery.map(cat=>(
                   <div key={cat.cat} style={{ marginBottom:18 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7, position:"sticky", top:46, zIndex:4, background:P["07080A"], padding:"6px 0" }}>
                       <span style={{ fontSize:13 }}>{cat.emoji}</span>
-                      <span style={{ fontSize:12, color:"#EAE8E2" }}>{cat.cat}</span>
+                      <span style={{ fontSize:12, color:P["EAE8E2"] }}>{cat.cat}</span>
                     </div>
                     <div style={{ paddingLeft:20 }}>
                       {cat.items.map((item,ii)=>{
                         const gKey = cat.cat + "-" + ii;
                         const gDone = groceryChecked[gKey];
                         return (
-                        <div key={item} onClick={()=>setGroceryChecked(p=>({...p,[gKey]:!p[gKey]}))} style={{ padding:"7px 0", borderBottom:"1px solid #0D0E10", fontSize:11, color:gDone?"#242628":item.includes("Zena")?"#27AE60":"#404244", display:"flex", alignItems:"center", gap:9, cursor:"pointer", textDecoration:gDone?"line-through":"none" }}>
-                          <div style={{ width:15, height:15, borderRadius:4, border:`2px solid ${gDone?"#3A8F5C":"#242628"}`, background:gDone?"#3A8F5C":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
-                            {gDone && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                        <div key={item} onClick={()=>setGroceryChecked(p=>({...p,[gKey]:!p[gKey]}))} style={{ padding:"7px 0", borderBottom:`1px solid ${P["0D0E10"]}`, fontSize:11, color:gDone?P["242628"]:item.includes("Zena")?"#27AE60":P["404244"], display:"flex", alignItems:"center", gap:9, cursor:"pointer", textDecoration:gDone?"line-through":"none" }}>
+                          <div style={{ width:15, height:15, borderRadius:4, border:`2px solid ${gDone?"#3A8F5C":P["242628"]}`, background:gDone?"#3A8F5C":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                            {gDone && <span style={{ fontSize:7, color:P["07080A"] }}>✓</span>}
                           </div>
                           {item}
                         </div>
@@ -1404,13 +1441,13 @@ export default function Protocol() {
               <div>
                 <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:16 }}>OPTIONAL SWAPS</div>
                 {swaps.map((s,i)=>(
-                  <div key={i} style={{ padding:"11px 14px", marginBottom:6, background:"#0B0C0E", border:"1px solid #161719", borderRadius:9 }}>
+                  <div key={i} style={{ padding:"11px 14px", marginBottom:6, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:9 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:3 }}>
-                      <span style={{ fontSize:12, color:"#404244" }}>{s.from}</span>
-                      <span style={{ color:"#1A1C1E" }}>→</span>
-                      <span style={{ fontSize:12, color:"#9A9890" }}>{s.to}</span>
+                      <span style={{ fontSize:12, color:P["404244"] }}>{s.from}</span>
+                      <span style={{ color:P["1A1C1E"] }}>→</span>
+                      <span style={{ fontSize:12, color:P["9A9890"] }}>{s.to}</span>
                     </div>
-                    <div style={{ fontSize:9, color:"#242628", fontFamily:"monospace" }}>{s.why}</div>
+                    <div style={{ fontSize:9, color:P["242628"], fontFamily:"monospace" }}>{s.why}</div>
                   </div>
                 ))}
               </div>
@@ -1422,7 +1459,7 @@ export default function Protocol() {
         {tab==="hair" && (
           <div>
             <div style={{ fontSize:9, color:"#C9A84C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:5 }}>HAIR GROWTH & CARE PROTOCOL</div>
-            <p style={{ fontSize:11, color:"#343638", marginBottom:10, lineHeight:1.7 }}>4c hair · Growth + Density + Scalp Health · Wash 2×/week · Derma Roll: Wed & Sun PM</p>
+            <p style={{ fontSize:11, color:P["343638"], marginBottom:10, lineHeight:1.7 }}>4c hair · Growth + Density + Scalp Health · Wash 2×/week · Derma Roll: Wed & Sun PM</p>
             {/* Wash day + laser legend */}
             <div style={{ display:"flex", gap:8, marginBottom:16, flexWrap:"wrap" }}>
               <div style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:"#1A0A0A", border:"1px solid #FF4D4D30", borderRadius:7 }}>
@@ -1449,7 +1486,7 @@ export default function Protocol() {
             </div>
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {hairDays.map((d,i)=>(
-                <button key={i} onClick={()=>setActiveHD(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeHD===i?d.color+"50":"#161719"}`, background:activeHD===i?d.color+"14":"#0B0C0E", color:activeHD===i?d.color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                <button key={i} onClick={()=>setActiveHD(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeHD===i?d.color+"50":P["161719"]}`, background:activeHD===i?d.color+"14":P["0B0C0E"], color:activeHD===i?d.color:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
                   <div style={{ fontSize:8, opacity:0.7, marginBottom:1 }}>{d.day.toUpperCase()}</div>
                   <div style={{ fontSize:10 }}>{d.emoji} {d.tag}</div>
                 </button>
@@ -1462,20 +1499,20 @@ export default function Protocol() {
                   {washBadge(hDay.washType)}
                   {laserBadge(hDay.tag)}
                 </div>
-                <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:5 }}>{hDay.emoji} {hDay.type}</div>
+                <div style={{ fontSize:18, color:P["EAE8E2"], marginBottom:5 }}>{hDay.emoji} {hDay.type}</div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{hDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:hDay.color+"12", border:`1px solid ${hDay.color}20`, fontSize:9, color:hDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
               </div>
               <div style={{ padding:"18px 20px" }}>
-                <SecBlock label="🌅 ~8:15 AM — POST-SHOWER MORNING" color={hDay.color}><StepList steps={hDay.am} color={hDay.color} /></SecBlock>
+                <SecBlock P={P} label="🌅 ~8:15 AM — POST-SHOWER MORNING" color={hDay.color}><StepList P={P} steps={hDay.am} color={hDay.color} /></SecBlock>
                 {hDay.washSteps && <>
-                  <SecBlock label="🚿 PRE-WASH" color="#C8943A"><StepList steps={hDay.prewash} color="#C8943A" /></SecBlock>
-                  {hDay.washType==="briogeo" && <SecBlock label="🧴 WASH — BRIOGEO SCALP EXFOLIATION (NO CONDITIONER)" color="#27AE60"><StepList steps={hDay.wash} color="#27AE60" /></SecBlock>}
-                  {hDay.washType==="mielle" && <SecBlock label="🧴 WASH — MIELLE SHAMPOO + CONDITIONER" color="#C9A84C"><StepList steps={hDay.wash} color="#C9A84C" /></SecBlock>}
-                  <SecBlock label="✨ LOC STYLING — ON DAMP HAIR" color="#B84040"><StepList steps={hDay.loc} color="#B84040" /></SecBlock>
-                  <SecBlock label="🪡 7:00 PM — DERMA ROLL PROTOCOL" color="#6B4FBB"><StepList steps={hDay.pm} color="#6B4FBB" /></SecBlock>
+                  <SecBlock P={P} label="🚿 PRE-WASH" color="#C8943A"><StepList P={P} steps={hDay.prewash} color="#C8943A" /></SecBlock>
+                  {hDay.washType==="briogeo" && <SecBlock P={P} label="🧴 WASH — BRIOGEO SCALP EXFOLIATION (NO CONDITIONER)" color="#27AE60"><StepList P={P} steps={hDay.wash} color="#27AE60" /></SecBlock>}
+                  {hDay.washType==="mielle" && <SecBlock P={P} label="🧴 WASH — MIELLE SHAMPOO + CONDITIONER" color="#C9A84C"><StepList P={P} steps={hDay.wash} color="#C9A84C" /></SecBlock>}
+                  <SecBlock P={P} label="✨ LOC STYLING — ON DAMP HAIR" color="#B84040"><StepList P={P} steps={hDay.loc} color="#B84040" /></SecBlock>
+                  <SecBlock P={P} label="🪡 7:00 PM — DERMA ROLL PROTOCOL" color="#6B4FBB"><StepList P={P} steps={hDay.pm} color="#6B4FBB" /></SecBlock>
                 </>}
-                {!hDay.washSteps && <SecBlock label="🌙 7:30 PM — NIGHTLY SCALP STACK" color={hDay.color}><StepList steps={hDay.pm} color={hDay.color} /></SecBlock>}
-                <div style={{ padding:"9px 11px", background:"#0A0B0D", border:"1px solid #C0392B20", borderRadius:7, fontSize:10, color:"#7A3030" }}>
+                {!hDay.washSteps && <SecBlock P={P} label="🌙 7:30 PM — NIGHTLY SCALP STACK" color={hDay.color}><StepList P={P} steps={hDay.pm} color={hDay.color} /></SecBlock>}
+                <div style={{ padding:"9px 11px", background:P["0A0B0D"], border:"1px solid #C0392B20", borderRadius:7, fontSize:10, color:"#7A3030" }}>
                   <span style={{ color:"#C0392B", fontFamily:"monospace", fontSize:8, letterSpacing:"0.12em" }}>⚠ KEY RULE  </span>
                   {hDay.roll ? "Rogaine SKIPPED this morning — derma roll tonight. Resume Rogaine next morning." : "Rogaine at 4 AM. Never apply oils to scalp before Rogaine fully dries."}
                 </div>
@@ -1492,14 +1529,14 @@ export default function Protocol() {
         {tab==="skin" && (
           <div>
             <div style={{ fontSize:9, color:"#E8B4D0", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:5 }}>SKINCARE PROTOCOL</div>
-            <p style={{ fontSize:11, color:"#343638", marginBottom:12, lineHeight:1.7 }}>Combination · Acne + Hyperpigmentation + Texture + Glass Skin</p>
+            <p style={{ fontSize:11, color:P["343638"], marginBottom:12, lineHeight:1.7 }}>Combination · Acne + Hyperpigmentation + Texture + Glass Skin</p>
             <div style={{ padding:"9px 13px", background:"#1E0808", border:"1px solid #C0392B30", borderRadius:8, marginBottom:14, fontSize:11, color:"#7A3030", lineHeight:1.7 }}>
               <div style={{ fontSize:8, color:"#C0392B", fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:3 }}>⚠ CRITICAL CONFLICTS</div>
               Vit C + Niacinamide never together · Retinol + Glycolic never same night · Faded Serum + AHAs/BHAs/Retinol never same session · Aztec mask = no other actives
             </div>
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {skinDays.map((d,i)=>(
-                <button key={i} onClick={()=>setActiveSD(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeSD===i?d.color+"50":"#161719"}`, background:activeSD===i?d.color+"14":"#0B0C0E", color:activeSD===i?d.color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                <button key={i} onClick={()=>setActiveSD(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeSD===i?d.color+"50":P["161719"]}`, background:activeSD===i?d.color+"14":P["0B0C0E"], color:activeSD===i?d.color:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
                   <div style={{ fontSize:8, opacity:0.7, marginBottom:1 }}>{d.day.toUpperCase()}</div>
                   <div style={{ fontSize:10 }}>{d.emoji} {d.tag}</div>
                 </button>
@@ -1508,15 +1545,15 @@ export default function Protocol() {
             <div style={{ border:`1px solid ${sDay.color}30`, borderRadius:14, overflow:"hidden" }}>
               <div style={{ padding:"16px 20px", background:sDay.color+"10", borderBottom:`1px solid ${sDay.color}18` }}>
                 <div style={{ fontSize:9, color:sDay.color, fontFamily:"monospace", letterSpacing:"0.2em", marginBottom:3 }}>{sDay.day.toUpperCase()} · {sDay.tag}</div>
-                <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:5 }}>{sDay.emoji} {sDay.type}</div>
+                <div style={{ fontSize:18, color:P["EAE8E2"], marginBottom:5 }}>{sDay.emoji} {sDay.type}</div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{sDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:sDay.color+"12", border:`1px solid ${sDay.color}20`, fontSize:9, color:sDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
               </div>
               <div style={{ padding:"18px 20px" }}>
-                <SecBlock label="🌅 8:00 AM — POST-SHOWER MORNING ROUTINE" color={sDay.color}><StepList steps={sDay.am} color={sDay.color} /></SecBlock>
-                <SecBlock label={sDay.day==="Sun"?"🌙 7:30 PM — AZTEC MASK + BARRIER REBUILD":sDay.tag==="RETINOL"?"🌙 7:30 PM — RETINOL SANDWICH":"🌙 7:30 PM — EXFOLIATION"} color={sDay.color}>
-                  <StepList steps={sDay.pm} color={sDay.color} />
+                <SecBlock P={P} label="🌅 8:00 AM — POST-SHOWER MORNING ROUTINE" color={sDay.color}><StepList P={P} steps={sDay.am} color={sDay.color} /></SecBlock>
+                <SecBlock P={P} label={sDay.day==="Sun"?"🌙 7:30 PM — AZTEC MASK + BARRIER REBUILD":sDay.tag==="RETINOL"?"🌙 7:30 PM — RETINOL SANDWICH":"🌙 7:30 PM — EXFOLIATION"} color={sDay.color}>
+                  <StepList P={P} steps={sDay.pm} color={sDay.color} />
                 </SecBlock>
-                <div style={{ padding:"9px 11px", background:"#0A0B0D", border:`1px solid ${sDay.color}18`, borderRadius:7, fontSize:10, color:"#4A4C4E" }}>
+                <div style={{ padding:"9px 11px", background:P["0A0B0D"], border:`1px solid ${sDay.color}18`, borderRadius:7, fontSize:10, color:P["4A4C4E"] }}>
                   <span style={{ color:sDay.color, fontFamily:"monospace", fontSize:8, letterSpacing:"0.12em" }}>SPOT TREATMENTS  </span>
                   Tea Tree: 1 drop + Cetaphil, dab on pimple only · Salicylic 2%: nose/breakout zones, any night as targeted spot
                 </div>
@@ -1533,7 +1570,7 @@ export default function Protocol() {
         {tab==="face" && (
           <div>
             <div style={{ fontSize:9, color:"#4A72D4", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:5 }}>NECK · JAW · FACE PROTOCOL</div>
-            <p style={{ fontSize:11, color:"#343638", marginBottom:14, lineHeight:1.7 }}>Thick neck · Sharp jaw · Defined cheekbones · Aesthetic face structure · Home protocol</p>
+            <p style={{ fontSize:11, color:P["343638"], marginBottom:14, lineHeight:1.7 }}>Thick neck · Sharp jaw · Defined cheekbones · Aesthetic face structure · Home protocol</p>
             {/* Weekly split legend */}
             <div style={{ display:"flex", gap:7, marginBottom:16, flexWrap:"wrap" }}>
               {[{color:"#B84040",bg:"#1A0A0A",label:"NECK STRENGTH",sub:"Mon + Thu · 10lb weighted"},{color:"#C8943A",bg:"#1A120A",label:"JAW + FACE",sub:"Tue + Fri · Exerciser + resistance"},{color:"#3A8F5C",bg:"#0A1E12",label:"MOBILITY",sub:"Wed + Sat · Stretch + decompress"},{color:"#4A72D4",bg:"#0A0D1A",label:"REST",sub:"Sunday"}].map(l=>(
@@ -1549,7 +1586,7 @@ export default function Protocol() {
             {/* Day selector */}
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {neckJawDays.map((d,i)=>(
-                <button key={i} onClick={()=>setActiveNJDay(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeNJDay===i?d.color+"50":"#161719"}`, background:activeNJDay===i?d.color+"14":"#0B0C0E", color:activeNJDay===i?d.color:"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
+                <button key={i} onClick={()=>setActiveNJDay(i)} style={{ padding:"7px 12px", borderRadius:8, border:`1px solid ${activeNJDay===i?d.color+"50":P["161719"]}`, background:activeNJDay===i?d.color+"14":P["0B0C0E"], color:activeNJDay===i?d.color:P["343638"], fontSize:11, cursor:"pointer", fontFamily:"monospace", transition:"all 0.2s" }}>
                   <div style={{ fontSize:8, opacity:0.7, marginBottom:1 }}>{d.day.toUpperCase()}</div>
                   <div style={{ fontSize:10 }}>{d.emoji} {d.tag}</div>
                 </button>
@@ -1562,7 +1599,7 @@ export default function Protocol() {
                 <div style={{ border:`1px solid ${njDay.color}30`, borderRadius:14, overflow:"hidden" }}>
                   <div style={{ padding:"16px 20px", background:njDay.color+"10", borderBottom:`1px solid ${njDay.color}18` }}>
                     <div style={{ fontSize:9, color:njDay.color, fontFamily:"monospace", letterSpacing:"0.2em", marginBottom:3 }}>{njDay.day.toUpperCase()} · {njDay.tag}</div>
-                    <div style={{ fontSize:18, color:"#EAE8E2", marginBottom:4 }}>{njDay.emoji} {njDay.type}</div>
+                    <div style={{ fontSize:18, color:P["EAE8E2"], marginBottom:4 }}>{njDay.emoji} {njDay.type}</div>
                     <div style={{ fontSize:9, color:njDay.color+"80", fontFamily:"monospace", marginBottom:8 }}>📅 {njDay.frequency}</div>
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{njDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:njDay.color+"12", border:`1px solid ${njDay.color}20`, fontSize:9, color:njDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
                   </div>
@@ -1570,18 +1607,18 @@ export default function Protocol() {
                     <div style={{ fontSize:8, color:njDay.color, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:10, paddingBottom:5, borderBottom:`1px solid ${njDay.color}20` }}>🌙 NIGHTTIME ROUTINE</div>
                     <div style={{ overflowX:"auto" }}>
                       <table style={{ width:"100%", borderCollapse:"collapse", minWidth:420 }}>
-                        <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["Exercise","Sets","Reps","Rest"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:"#242628", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
+                        <thead><tr style={{ borderBottom:`1px solid ${P["141516"]}` }}>{["Exercise","Sets","Reps","Rest"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:P["242628"], fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
                         <tbody>
                           {njDay.exercises.map((ex,i)=>(
-                            <tr key={i} style={{ borderBottom:"1px solid #0D0E10" }}>
+                            <tr key={i} style={{ borderBottom:`1px solid ${P["0D0E10"]}` }}>
                               <td style={{ padding:"9px 7px" }}>
-                                <div style={{ fontSize:11, color:"#C8C6C0", marginBottom:2 }}>{ex.name}</div>
-                                <div style={{ fontSize:10, color:"#343638", lineHeight:1.6 }}>{ex.instruction}</div>
+                                <div style={{ fontSize:11, color:P["C8C6C0"], marginBottom:2 }}>{ex.name}</div>
+                                <div style={{ fontSize:10, color:P["343638"], lineHeight:1.6 }}>{ex.instruction}</div>
                                 {ex.note && <div style={{ fontSize:9, color:"#4A72D4", marginTop:3, fontStyle:"italic" }}>{ex.note}</div>}
                               </td>
                               <td style={{ padding:"9px 7px", fontSize:12, color:njDay.color, fontFamily:"monospace", textAlign:"center", verticalAlign:"top" }}>{ex.sets}</td>
                               <td style={{ padding:"9px 7px", fontSize:11, color:"#C8943A", fontFamily:"monospace", verticalAlign:"top", whiteSpace:"nowrap" }}>{ex.reps}</td>
-                              <td style={{ padding:"9px 7px", fontSize:10, color:"#404244", fontFamily:"monospace", verticalAlign:"top", whiteSpace:"nowrap" }}>{ex.rest}</td>
+                              <td style={{ padding:"9px 7px", fontSize:10, color:P["404244"], fontFamily:"monospace", verticalAlign:"top", whiteSpace:"nowrap" }}>{ex.rest}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -1599,7 +1636,7 @@ export default function Protocol() {
         )}
 
       </div>
-      <style>{`* { box-sizing: border-box; } ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: #07080A; } ::-webkit-scrollbar-thumb { background: #1A1C1E; border-radius: 2px; } button:focus { outline: none; }`}</style>
+      <style>{`* { box-sizing: border-box; } ::-webkit-scrollbar { width: 3px; height: 3px; } ::-webkit-scrollbar-track { background: ${P["07080A"]}; } ::-webkit-scrollbar-thumb { background: ${P["1A1C1E"]}; border-radius: 2px; } button:focus, textarea:focus, input:focus { outline: none; } @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } } .tabfade { animation: fadeIn 0.22s ease; }`}</style>
     </div>
   );
 }
