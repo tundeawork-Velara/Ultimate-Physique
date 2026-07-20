@@ -39,9 +39,33 @@ const restToSec = (r) => {
 const WATER_TARGET = 4.0;
 const ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-// ── THEME PALETTES: PD = dark (original), PL = light (inverted neutral ramp) ──
-const PD = {"07080A":"#07080A","09080C":"#09080C","090A0C":"#090A0C","0A0B0D":"#0A0B0D","0B0C0E":"#0B0C0E","0C0D0F":"#0C0D0F","0C100D":"#0C100D","0D0E10":"#0D0E10","0E0F10":"#0E0F10","0E0F11":"#0E0F11","101214":"#101214","131416":"#131416","141516":"#141516","161719":"#161719","1A1C1E":"#1A1C1E","202224":"#202224","242628":"#242628","282A2C":"#282A2C","2C2E30":"#2C2E30","303234":"#303234","343638":"#343638","383A3C":"#383A3C","404244":"#404244","484A4C":"#484A4C","4A4C4E":"#4A4C4E","5A5C5E":"#5A5C5E","6A6C6E":"#6A6C6E","7A7870":"#7A7870","8A8880":"#8A8880","9A9890":"#9A9890","A8A6A0":"#A8A6A0","C8C6C0":"#C8C6C0","EAE8E2":"#EAE8E2"};
-const PL = {"07080A":"#F8F7F5","09080C":"#F6F7F3","090A0C":"#F6F5F3","0A0B0D":"#F5F4F2","0B0C0E":"#F4F3F1","0C0D0F":"#F3F2F0","0C100D":"#F3EFF2","0D0E10":"#F2F1EF","0E0F10":"#F1F0EF","0E0F11":"#F1F0EE","101214":"#EFEDEB","131416":"#ECEBE9","141516":"#EBEAE9","161719":"#E9E8E6","1A1C1E":"#E5E3E1","202224":"#DFDDDB","242628":"#DBD9D7","282A2C":"#D7D5D3","2C2E30":"#D3D1CF","303234":"#CFCDCB","343638":"#CBC9C7","383A3C":"#C7C5C3","404244":"#BFBDBB","484A4C":"#B7B5B3","4A4C4E":"#B5B3B1","5A5C5E":"#A5A3A1","6A6C6E":"#959391","7A7870":"#85878F","8A8880":"#75777F","9A9890":"#65676F","A8A6A0":"#57595F","C8C6C0":"#37393F","EAE8E2":"#15171D"};
+// ── THEME PALETTES: PD = dark, PL = light. Hand-tuned for contrast. ──
+const PD = {
+  // backgrounds + borders (unchanged from original design)
+  "07080A":"#07080A","09080C":"#09080C","090A0C":"#090A0C","0A0B0D":"#0A0B0D","0B0C0E":"#0B0C0E",
+  "0C0D0F":"#0C0D0F","0C100D":"#0C100D","0D0E10":"#0D0E10","0E0F10":"#0E0F10","0E0F11":"#0E0F11",
+  "101214":"#101214","131416":"#131416","141516":"#141516","161719":"#161719","1A1C1E":"#1A1C1E",
+  // ui glyphs + inactive elements (lifted for visibility)
+  "202224":"#5A5C60","242628":"#4A4C50","282A2C":"#7A7C80",
+  // text ramp (lifted 2-3 steps — readable on OLED in daylight)
+  "2C2E30":"#84868A","303234":"#8A8C90","343638":"#909296","383A3C":"#94969A","404244":"#9A9CA0",
+  "484A4C":"#A0A2A6","4A4C4E":"#A4A6AA","5A5C5E":"#ACAEB2","6A6C6E":"#B2B4B8",
+  "7A7870":"#B8B6AE","8A8880":"#C0BEB6","9A9890":"#C8C6BE","A8A6A0":"#D2D0CA","C8C6C0":"#DEDCD6",
+  "EAE8E2":"#F2F0EA"
+};
+const PL = {
+  // light backgrounds (warm paper)
+  "07080A":"#F6F5F0","09080C":"#F4F3EE","090A0C":"#F4F3EE","0A0B0D":"#EFEEE8","0B0C0E":"#FCFBF7",
+  "0C0D0F":"#F9F8F4","0C100D":"#F2F3EE","0D0E10":"#EDECE6","0E0F10":"#EEEDE7","0E0F11":"#EEEDE7",
+  "101214":"#E9E8E2","131416":"#E5E4DE","141516":"#E3E2DC","161719":"#DCDAD3","1A1C1E":"#D2D0C9",
+  // ui glyphs + inactive elements
+  "202224":"#8E9094","242628":"#B4B2AC","282A2C":"#84868A",
+  // text ramp (genuinely dark on light)
+  "2C2E30":"#5E6064","303234":"#5A5C60","343638":"#56585C","383A3C":"#525458","404244":"#4C4E52",
+  "484A4C":"#46484C","4A4C4E":"#434549","5A5C5E":"#3E4044","6A6C6E":"#3A3C40",
+  "7A7870":"#4C4A42","8A8880":"#423F38","9A9890":"#3A3830","A8A6A0":"#322F28","C8C6C0":"#282520",
+  "EAE8E2":"#16171B"
+};
 
 
 const DOD = ["100 Reverse Plank","100 Rear Delt Flys","100 Reverse Nordics","100 Side Plank Reach","100 Pistol Squats","Nordic Ham Curls 3×8 (slow neg)","100 Neck Curls/Ext","100 Reverse Curls","100 Ab Wheel","100 Curls (var)","100 Hip Bridges","100 Leg Raises","100 Tricep Ext","100 Flys","Standard PU × 30","100 Pike PU","Close-Grip PU × 25","Decline PU × 25","Explosive PU × 20","Diamond PU × 20","Incline PU × 20","Wide PU × 20","Incline sm × 20","Archer PU × 20","Tempo PU × 20","Pseudo Planche × 20","Close-Grip PU × 20"];
@@ -733,9 +757,12 @@ export default function Protocol() {
             <div style={{ display:"flex", gap:5 }}>{["#3A8F5C","#C8943A","#B84040","#4A72D4"].map(c=><div key={c} style={{ width:6, height:6, borderRadius:"50%", background:c, boxShadow:`0 0 7px ${c}` }} />)}</div>
             <span style={{ fontSize:9, letterSpacing:"0.26em", color:"#3A8F5C", fontFamily:"monospace" }}>TUNDE · 185 LBS · 4 AM FASTED PROTOCOL · DO OR DIE</span>
           </div>
-          <div style={{ marginBottom:8 }}>
-            <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:400, letterSpacing:"-0.03em", lineHeight:1.0, margin:"0 0 3px", fontStyle:"italic" }}>Ultimate</h1>
-            <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:700, letterSpacing:"-0.03em", lineHeight:1.0, margin:0, color:"#3A8F5C" }}>Physique</h1>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+            <div>
+              <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:400, letterSpacing:"-0.03em", lineHeight:1.0, margin:"0 0 3px", fontStyle:"italic" }}>Ultimate</h1>
+              <h1 style={{ fontSize:"clamp(22px,5vw,44px)", fontWeight:700, letterSpacing:"-0.03em", lineHeight:1.0, margin:0, color:"#3A8F5C" }}>Physique</h1>
+            </div>
+            <button onClick={()=>setDarkMode(d=>!d)} style={{ padding:"8px 14px", background:P["0E0F11"], border:`1px solid ${P["242628"]}`, borderRadius:8, color:P["EAE8E2"], fontSize:12, cursor:"pointer", flexShrink:0, marginTop:4 }}>{darkMode ? "☀️ Light" : "🌙 Dark"}</button>
           </div>
           <p style={{ color:P["343638"], fontSize:11, margin:"0 0 14px", maxWidth:520, lineHeight:1.7 }}>Nutrition · Supplements · Training · Recovery · Hair · Skin — one unified daily OS.</p>
           <div style={{ display:"flex", gap:7, flexWrap:"wrap", marginBottom:16 }}>
@@ -752,7 +779,6 @@ export default function Protocol() {
               <span style={{ fontSize:13, fontWeight:700, color:streakLook(streak).c, fontFamily:"monospace" }}>{streak}</span>
               <span style={{ fontSize:8, color:streakLook(streak).c+"99", fontFamily:"monospace", letterSpacing:"0.1em" }}>DAY STREAK</span>
             </div>
-            <button onClick={()=>setDarkMode(d=>!d)} style={{ padding:"7px 13px", background:P["0E0F11"], border:`1px solid ${P["1A1C1E"]}`, borderRadius:6, color:P["EAE8E2"], fontSize:12, cursor:"pointer" }}>{darkMode ? "☀️ Light" : "🌙 Dark"}</button>
           </div>
           <div style={{ display:"flex", flexWrap:"wrap", borderTop:`1px solid ${P["161719"]}`, paddingTop:14 }}>
             {[{label:"Window",val:"8 hrs",sub:"9AM–5PM",c:"#3A8F5C"},{label:"Calories",val:totals.cal.toLocaleString(),sub:"kcal",c:P["EAE8E2"]},{label:"Protein",val:totals.p+"g",sub:Math.round(totals.p*4/totals.cal*100)+"%",c:"#B84040"},{label:"Carbs",val:totals.c+"g",sub:Math.round(totals.c*4/totals.cal*100)+"%",c:"#C8943A"},{label:"Fats",val:totals.f+"g",sub:Math.round(totals.f*9/totals.cal*100)+"%",c:"#4A72D4"}].map((s,i)=>(
