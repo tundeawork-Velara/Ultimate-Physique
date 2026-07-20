@@ -662,7 +662,6 @@ export default function Protocol() {
       setWater(0);
       setLastDate(current);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Streak: consecutive trailing days scoring 70%+
