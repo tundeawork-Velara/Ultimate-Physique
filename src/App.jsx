@@ -1,9 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const T = "training";
 const R = "rest";
 
-const DOD = ["100 Reverse Plank","100 Rear Delt Flys","100 Reverse Nordics","100 Side Plank Reach","100 Pistol Squats","100 Nordic Ham Curls","100 Neck Curls/Ext","100 Reverse Curls","100 Ab Wheel","100 Curls (var)","100 Hip Bridges","100 Leg Raises","100 Tricep Ext","100 Flys","Standard PU × 30","100 Pike PU","Close-Grip PU × 25","Decline PU × 25","Explosive PU × 20","Diamond PU × 20","Incline PU × 20","Wide PU × 20","Incline sm × 20","Archer PU × 20","Tempo PU × 20","Pseudo Planche × 20","Close-Grip PU × 20"];
+// ─── PERSISTENCE (localStorage — survives app closes on deployed site) ───
+const store = {
+  get(key, fallback) {
+    try {
+      const v = window.localStorage.getItem("up-" + key);
+      return v === null ? fallback : JSON.parse(v);
+    } catch (e) { return fallback; }
+  },
+  set(key, value) {
+    try { window.localStorage.setItem("up-" + key, JSON.stringify(value)); } catch (e) {}
+  },
+};
+
+function useStored(key, initial) {
+  const [val, setVal] = useState(() => store.get(key, initial));
+  useEffect(() => { store.set(key, val); }, [key, val]);
+  return [val, setVal];
+}
+
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+};
+
+// Parses rest strings like "3 min", "2–3 min", "90 sec" into seconds for the timer
+const restToSec = (r) => {
+  if (!r || r.includes("circuit") || r === "—") return 0;
+  const nums = (r.match(/\d+/g) || []).map(Number);
+  if (nums.length === 0) return 0;
+  const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+  return r.includes("sec") ? Math.round(avg) : Math.round(avg * 60);
+};
+
+const WATER_TARGET = 4.0;
+const ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+const DOD = ["100 Reverse Plank","100 Rear Delt Flys","100 Reverse Nordics","100 Side Plank Reach","100 Pistol Squats","Nordic Ham Curls 3×8 (slow neg)","100 Neck Curls/Ext","100 Reverse Curls","100 Ab Wheel","100 Curls (var)","100 Hip Bridges","100 Leg Raises","100 Tricep Ext","100 Flys","Standard PU × 30","100 Pike PU","Close-Grip PU × 25","Decline PU × 25","Explosive PU × 20","Diamond PU × 20","Incline PU × 20","Wide PU × 20","Incline sm × 20","Archer PU × 20","Tempo PU × 20","Pseudo Planche × 20","Close-Grip PU × 20"];
 
 const weekDays = [
   { day:"Monday",type:"Upper Body Max Strength",emoji:"💪",color:"#B84040",tag:"STRENGTH",
@@ -13,11 +49,11 @@ const weekDays = [
     suppNote:"Full pre-workout + creatine. Post-workout whey within 30 min.",
     muscleGroups:["Chest","Back","Shoulders","Triceps","Biceps","Core"] },
   { day:"Tuesday",type:"Lower Body Strength & Power",emoji:"🦵",color:"#C8943A",tag:"POWER",
-    doOrDie:DOD,
-    exercises:[{name:"Back Squat (DB Goblet if no rack)",sets:5,reps:"10",rest:"3 min",focus:"Quad + glute"},{name:"Romanian Deadlift (DBs or Barbell)",sets:5,reps:"10",rest:"2–3 min",focus:"Posterior chain"},{name:"Bulgarian Split Squat",sets:5,reps:"10/leg",rest:"2 min",focus:"Unilateral balance"},{name:"Hip Thrusts (Weighted)",sets:5,reps:"10",rest:"2 min",focus:"Glute strength"},{name:"Box Jumps / Step-Ups",sets:5,reps:"10",rest:"1–2 min",focus:"Explosive power"},{name:"Bench Press (volume)",sets:5,reps:"15",rest:"3 min",focus:"Chest volume"},{name:"Incline Bench (volume)",sets:5,reps:"15",rest:"3 min",focus:"Upper chest"}],
+    doOrDie:DOD, dodHalf:true,
+    exercises:[{name:"Back Squat (DB Goblet if no rack)",sets:5,reps:"10",rest:"3 min",focus:"Quad + glute"},{name:"Romanian Deadlift (DBs or Barbell)",sets:5,reps:"10",rest:"2–3 min",focus:"Posterior chain"},{name:"Bulgarian Split Squat",sets:5,reps:"10/leg",rest:"2 min",focus:"Unilateral balance"},{name:"Hip Thrusts (Weighted)",sets:5,reps:"10",rest:"2 min",focus:"Glute strength"},{name:"Box Jumps / Step-Ups",sets:5,reps:"10",rest:"1–2 min",focus:"Explosive power"},{name:"Bench Press (volume)",sets:5,reps:"15",rest:"3 min",focus:"Chest volume"},{name:"Barbell / DB Row (volume)",sets:5,reps:"15",rest:"2 min",focus:"Pull volume — balances weekly press:pull ratio"},{name:"Standing Calf Raises",sets:3,reps:"20",rest:"45 sec",focus:"Direct calf volume"}],
     nutrition:"High carb. Full sweet potato + banana.",
     suppNote:"Full electrolyte mix. Creatine demand highest on leg days.",
-    muscleGroups:["Quads","Hamstrings","Glutes","Calves","Core","Chest (volume)"] },
+    muscleGroups:["Quads","Hamstrings","Glutes","Calves","Back (volume)","Chest (volume)"] },
   { day:"Wednesday",type:"Tactical Conditioning",emoji:"🔥",color:"#3A8F5C",tag:"CONDITIONING",
     doOrDie:[],
     exercises:[{name:"Burpees",sets:5,reps:"20",rest:"In circuit",focus:"Full body metabolic conditioning"},{name:"Push-Ups (Wide / Close mix)",sets:5,reps:"25",rest:"In circuit",focus:"Chest + tricep endurance"},{name:"Pull-Ups (Assisted if needed)",sets:5,reps:"15",rest:"In circuit",focus:"Back + bicep endurance"},{name:"Walking Lunges (Weighted optional)",sets:5,reps:"30",rest:"In circuit",focus:"Quad + glute"},{name:"200m Sprint / High-Knee Run",sets:5,reps:"1",rest:"2 min between rounds",focus:"Cardiovascular + lactate threshold"}],
@@ -32,8 +68,8 @@ const weekDays = [
     suppNote:"Creatine valuable for speed bench sets.",
     muscleGroups:["Upper Chest","Back","Rear Delts","Biceps","Lateral Delts","Triceps"] },
   { day:"Friday",type:"Lower Body Power & Posterior Chain",emoji:"⚡",color:"#6B4FBB",tag:"POSTERIOR",
-    doOrDie:DOD,
-    exercises:[{name:"Front Squat (DB Goblet or Barbell)",sets:5,reps:"10",rest:"3 min",focus:"Quad dominance + core stability"},{name:"Romanian Deadlift",sets:5,reps:"10",rest:"2–3 min",focus:"Hamstring + glute stretch strength"},{name:"Hip Thrusts",sets:5,reps:"10",rest:"2 min",focus:"Glute activation + posterior power"},{name:"Broad Jumps / Step Jumps",sets:5,reps:"10",rest:"1–2 min",focus:"Horizontal power"},{name:"Farmer Carries",sets:5,reps:"40 sec",rest:"1 min",focus:"Grip + traps"},{name:"Paused Bench (5 sec hold)",sets:5,reps:"5",rest:"1 min",focus:"Eccentric control"},{name:"Press (no shoulder extension)",sets:5,reps:"5",rest:"1 min",focus:"Shoulder joint health"}],
+    doOrDie:DOD, dodHalf:true,
+    exercises:[{name:"Front Squat (DB Goblet or Barbell)",sets:5,reps:"10",rest:"3 min",focus:"Quad dominance + core stability"},{name:"Romanian Deadlift",sets:5,reps:"10",rest:"2–3 min",focus:"Hamstring + glute stretch strength"},{name:"Hip Thrusts",sets:5,reps:"10",rest:"2 min",focus:"Glute activation + posterior power"},{name:"Broad Jumps / Step Jumps",sets:5,reps:"10",rest:"1–2 min",focus:"Horizontal power"},{name:"Farmer Carries",sets:5,reps:"40 sec",rest:"1 min",focus:"Grip + traps"},{name:"Paused Bench (5 sec hold)",sets:5,reps:"5",rest:"1 min",focus:"Eccentric control"},{name:"Press (no shoulder extension)",sets:5,reps:"5",rest:"1 min",focus:"Shoulder joint health"},{name:"Standing Calf Raises",sets:3,reps:"20",rest:"45 sec",focus:"Direct calf volume — second weekly dose"}],
     nutrition:"High carb — last high-carb day of the week.",
     suppNote:"Magnesium at 8:30 PM — supports weekend recovery.",
     muscleGroups:["Quads","Hamstrings","Glutes","Posterior Chain","Grip","Shoulders"] },
@@ -246,7 +282,7 @@ const grocery = [
   { cat:"Vegetables",emoji:"🥦",items:["Baby spinach — 1kg","Broccoli — 1kg","Kale — 600g","Asparagus — 840g","Bell peppers, mixed — 700g","Purple cabbage — 1 head","Cherry tomatoes — 700g","Cucumber — 4","Zucchini — 4","Avocados — 7","Sauerkraut (raw) — 420g"] },
   { cat:"Carbs & Starches",emoji:"🌾",items:["Rolled oats — 560g","White rice — 1kg (dry)","Brown rice — 500g (rest days)","Sweet potatoes — 1.2kg"] },
   { cat:"Healthy Fats",emoji:"🫒",items:["Extra virgin olive oil — 500ml","Walnuts (raw) — 175g","Ground flaxseed — 105g","Pumpkin seeds (raw) — 140g"] },
-  { cat:"Supplements & Pantry",emoji:"🧂",items:["Zena Greens Supergreens — 7 stick packs/week","Cinnamon, turmeric, black pepper, sea salt, garlic powder","Lemons — 7","Garlic — 2 heads","Sea salt + cream of tartar (electrolytes)","Creatine monohydrate — 250g"] },
+  { cat:"Supplements & Pantry",emoji:"🧂",items:["Zena Greens Supergreens — 7 stick packs/week","Cinnamon, turmeric, black pepper, sea salt, garlic powder","Lemons — 7","Garlic — 2 heads","Sea salt + cream of tartar (electrolytes)","Creatine monohydrate — 250g","Nizoral 1% Ketoconazole Shampoo — 1 bottle (lasts ~3 months at 2×/week)"] },
 ];
 
 const swaps = [
@@ -267,36 +303,36 @@ const PM_STACK = [{num:"1",product:"The Ordinary Multi-Peptide Serum",instructio
 // Sun = Mielle shampoo + conditioner (moisture reset)
 const hairDays = [
   { day:"Mon",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. Sit or work during session. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp immediately after iRestore session ends. Half a cap. Air dry 5–10 min.",note:"Never apply oils before Rogaine dries. Wash hands immediately."},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline, temples, edges. Massage 60 sec.",note:"Apply 10 min after Rogaine is fully dry."}],
+    am:[{num:"1",product:"Post-Workout Shower + Towel-Dry Scalp",instruction:"Shower right after training ends at 8 AM. Scalp must be clean and fully dry before the laser cap.",note:"Sweat dilutes minoxidil and blunts LLLT — never apply either to a sweaty scalp."},{num:"2",product:"iRestore Laser Cap — 25 min (~8:15 AM)",instruction:"Place on clean, dry scalp. Run it during green tea + deep work block. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"3",product:"Rogaine 5% Minoxidil Foam (~8:40 AM)",instruction:"Apply to dry scalp immediately after iRestore session ends. Half a cap. Air dry 5–10 min.",note:"Full 4-hr absorption window with zero sweat interference. Never apply oils before Rogaine dries. Wash hands immediately."},{num:"4",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline, temples, edges. Massage 60 sec.",note:"Apply 10 min after Rogaine is fully dry."}],
     pm:[{num:"1",product:"The Ordinary Multi-Peptide Serum",instruction:"Apply to scalp sections. Massage 60 sec.",note:null},{num:"2",product:"PRSP Root Revive",instruction:"5–6 drops to scalp. Circular massage 90 sec.",note:null},{num:"3",product:"Pumpkin Seed Oil",instruction:"3–4 drops to scalp. Focus on thinning areas.",note:null},{num:"4",product:"Jojoba Oil",instruction:"Pea-sized to mid-lengths and ENDS ONLY. Not scalp.",note:"Seals moisture overnight."},{num:"5",product:"Satin Bonnet / Durag",instruction:"Cover before sleep.",note:null}] },
   { day:"Tue",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
+    am:[{num:"1",product:"Post-Workout Shower + Towel-Dry Scalp",instruction:"Shower right after training ends at 8 AM. Rogaine goes on a clean, dry scalp only.",note:"Sweat dilutes minoxidil — applying at 4 AM before training wastes the dose."},{num:"2",product:"Rogaine 5% Minoxidil Foam (~8:15 AM)",instruction:"Apply to dry scalp. Half a cap. Air dry 5–10 min.",note:"Full 4-hr absorption window."},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:PM_STACK },
-  { day:"Wed",tag:"WASH + ROLL",emoji:"🚿",color:"#27AE60",type:"Scalp Exfoliation + Derma Roll",focus:["Skip Rogaine","Briogeo Scalp Exfoliation","Derma Roll PM"],roll:true,washSteps:true,washType:"briogeo",
-    am:[{num:"1",product:"Copenhagen Activator ONLY — skip Rogaine",instruction:"Apply to hairline/temples as normal.",note:"⚠ SKIP Rogaine this morning. Derma roll tonight = microchannels open. Resume Thursday 4 AM."}],
+  { day:"Wed",tag:"WASH + ROLL",emoji:"🚿",color:"#27AE60",type:"Scalp Exfoliation + Derma Roll",focus:["Skip Rogaine","Nizoral 1%","Briogeo Scalp Exfoliation","Derma Roll PM"],roll:true,washSteps:true,washType:"briogeo",
+    am:[{num:"1",product:"Copenhagen Activator ONLY — skip Rogaine",instruction:"Apply to hairline/temples as normal.",note:"⚠ SKIP Rogaine this morning. Derma roll tonight = microchannels open. Resume Thursday ~8:15 AM post-shower (13+ hrs after rolling)."}],
     prewash:[{num:"1",product:"Black Castor Oil",instruction:"Section hair. Scalp massage 5–10 min.",note:"Loosens buildup and stimulates circulation before exfoliation."},{num:"2",product:"Wait 15–20 min",instruction:"Cover with plastic cap.",note:"Castor oil primes scalp — do not skip."}],
-    wash:[{num:"1",product:"Briogeo Scalp Revival — Charcoal + Coconut Oil",instruction:"Apply to wet scalp. Circular massage 3–5 min. Focus on buildup areas.",note:"Charcoal draws out buildup. Beads unclog follicles."},{num:"2",product:"Rinse Thoroughly",instruction:"Rinse until water runs clear.",note:"No conditioner on Briogeo days — LOC provides moisture."},{num:"3",product:"Rinse — Cool Water Final Rinse",instruction:"Cool water final rinse.",note:null}],
+    wash:[{num:"1",product:"Nizoral 1% (Ketoconazole) — First Lather",instruction:"Apply to wet scalp. Lather, leave 3–5 min, rinse thoroughly.",note:"Ketoconazole has real evidence for DHT-related loss — complements your oral DHT blocker. 2×/week on wash days only."},{num:"2",product:"Briogeo Scalp Revival — Charcoal + Coconut Oil",instruction:"Apply to wet scalp. Circular massage 3–5 min. Focus on buildup areas.",note:"Charcoal draws out buildup. Beads unclog follicles."},{num:"3",product:"Rinse Thoroughly",instruction:"Rinse until water runs clear.",note:"No conditioner on Briogeo days — LOC provides moisture."},{num:"4",product:"Rinse — Cool Water Final Rinse",instruction:"Cool water final rinse.",note:null}],
     loc:[{num:"L",product:"Camille Rose Curl Love (Leave-in)",instruction:"Section by section to damp hair. Rake through.",note:null},{num:"O",product:"Jojoba Oil",instruction:"Small amount over Curl Love each section.",note:null},{num:"C",product:"Asiam DoubleButter Cream",instruction:"Apply and scrunch in.",note:null}],
     pm:[{num:"1",product:"Sanitize Roller",instruction:"70% IPA spray. Wait 5 min.",note:"0.5–0.75mm. Replace every 10–12 uses."},{num:"2",product:"Derma Roll Scalp",instruction:"H, V, diagonal passes. 4–5 each. Light pressure.",note:null},{num:"3",product:"The Ordinary (immediately post-roll)",instruction:"Apply immediately post-roll — 3–4× deeper penetration.",note:null},{num:"4",product:"Root Revive + Pumpkin Seed Oil",instruction:"Follow nightly order.",note:null},{num:"5",product:"Jojoba + Bonnet",instruction:"Seal ends. Cover. Sanitize roller.",note:null}] },
   { day:"Thu",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:null},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
+    am:[{num:"1",product:"Post-Workout Shower + Towel-Dry Scalp",instruction:"Shower right after training ends at 8 AM. Clean, fully dry scalp before the laser cap.",note:"Sweat dilutes minoxidil and blunts LLLT."},{num:"2",product:"iRestore Laser Cap — 25 min (~8:15 AM)",instruction:"Place on clean, dry scalp. Run during green tea block. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine right after penetrates significantly better."},{num:"3",product:"Rogaine 5% Minoxidil Foam (~8:40 AM)",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:"Full absorption window — no sweat interference."},{num:"4",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:PM_STACK },
   { day:"Fri",tag:"DAILY",emoji:"🌅",color:"#C8943A",type:"Morning + Evening",focus:["Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"Rogaine 5% Minoxidil Foam",instruction:"Dry scalp. Half cap. Air dry 5–10 min.",note:null},{num:"2",product:"Copenhagen Activator",instruction:"8–10 drops, massage 60 sec.",note:"10 min after Rogaine dries."}],
+    am:[{num:"1",product:"Post-Workout Shower + Towel-Dry Scalp",instruction:"Shower right after training ends at 8 AM. Rogaine on clean, dry scalp only.",note:"Sweat dilutes minoxidil."},{num:"2",product:"Rogaine 5% Minoxidil Foam (~8:15 AM)",instruction:"Dry scalp. Half cap. Air dry 5–10 min.",note:"Full absorption window."},{num:"3",product:"Copenhagen Activator",instruction:"8–10 drops, massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:PM_STACK },
   { day:"Sat",tag:"LASER + DAILY",emoji:"🔴",color:"#C8943A",type:"iRestore + Morning + Evening",focus:["iRestore Laser Cap","Rogaine","Activator","Nightly Stack"],roll:false,washSteps:false,washType:null,
-    am:[{num:"1",product:"iRestore Laser Cap — 25 min",instruction:"Place on dry, clean scalp at 4 AM. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine applied right after penetrates significantly better."},{num:"2",product:"Rogaine 5% Minoxidil Foam",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:null},{num:"3",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
+    am:[{num:"1",product:"Post-Workout Shower + Towel-Dry Scalp",instruction:"Shower right after training ends at 8 AM. Clean, fully dry scalp before the laser cap.",note:"Sweat dilutes minoxidil and blunts LLLT."},{num:"2",product:"iRestore Laser Cap — 25 min (~8:15 AM)",instruction:"Place on clean, dry scalp. Run during green tea block. No products beforehand.",note:"LLLT boosts scalp blood flow + cellular ATP. Rogaine right after penetrates significantly better."},{num:"3",product:"Rogaine 5% Minoxidil Foam (~8:40 AM)",instruction:"Apply immediately after iRestore session. Half a cap. Air dry 5–10 min.",note:"Full absorption window — no sweat interference."},{num:"4",product:"Copenhagen Grooming Activator",instruction:"8–10 drops to hairline. Massage 60 sec.",note:"10 min after Rogaine dries."}],
     pm:PM_STACK },
-  { day:"Sun",tag:"WASH + ROLL",emoji:"💆",color:"#C8943A",type:"Moisture Reset + Derma Roll",focus:["Skip Rogaine","Mielle Shampoo + Conditioner","Derma Roll PM"],roll:true,washSteps:true,washType:"mielle",
-    am:[{num:"1",product:"Copenhagen Activator ONLY — skip Rogaine",instruction:"Apply to hairline/temples as normal.",note:"⚠ SKIP Rogaine this morning. Derma roll tonight. Resume Monday 4 AM."}],
+  { day:"Sun",tag:"WASH + ROLL",emoji:"💆",color:"#C8943A",type:"Moisture Reset + Derma Roll",focus:["Skip Rogaine","Nizoral 1%","Mielle Shampoo + Conditioner","Derma Roll PM"],roll:true,washSteps:true,washType:"mielle",
+    am:[{num:"1",product:"Copenhagen Activator ONLY — skip Rogaine",instruction:"Apply to hairline/temples as normal.",note:"⚠ SKIP Rogaine this morning. Derma roll tonight. Resume Monday ~8:15 AM post-shower (13+ hrs after rolling)."}],
     prewash:[{num:"1",product:"Black Castor Oil",instruction:"Section hair. Scalp massage 5–10 min.",note:"Stimulates circulation and protects roots."},{num:"2",product:"Batana Oil",instruction:"Apply to mid-lengths and ends. Comb through gently.",note:"Cold-pressed from American palm nuts. Rich in tocotrienols (Vit E family) and oleic acid — one of the most potent oils for hair growth and end repair."},{num:"3",product:"Wait 20–30 min",instruction:"Cover with plastic cap.",note:null}],
-    wash:[{num:"1",product:"Mielle Pomegranate & Honey Shampoo — Sulfate-Free",instruction:"Wet hair. Lather, massage 2–3 min. Rinse well.",note:"Sulfate-free. Formulated for Type 4."},{num:"2",product:"Mielle Pomegranate & Honey Conditioner",instruction:"Apply to mid-lengths + ends. Wide-tooth comb. Leave 5–10 min.",note:"Deep hydration for Type 4 detangling."},{num:"3",product:"Rinse — Cool Water",instruction:"Cool water final rinse.",note:null}],
+    wash:[{num:"1",product:"Nizoral 1% (Ketoconazole) — First Lather",instruction:"Apply to wet scalp. Lather, leave 3–5 min, rinse thoroughly.",note:"Second weekly ketoconazole dose. Scalp only — Mielle handles the lengths next."},{num:"2",product:"Mielle Pomegranate & Honey Shampoo — Sulfate-Free",instruction:"Wet hair. Lather, massage 2–3 min. Rinse well.",note:"Sulfate-free. Formulated for Type 4."},{num:"3",product:"Mielle Pomegranate & Honey Conditioner",instruction:"Apply to mid-lengths + ends. Wide-tooth comb. Leave 5–10 min.",note:"Deep hydration for Type 4 detangling."},{num:"4",product:"Rinse — Cool Water",instruction:"Cool water final rinse.",note:null}],
     loc:[{num:"L",product:"Camille Rose Curl Love (Leave-in)",instruction:"Apply section by section to damp hair. Rake through.",note:"Layer over the conditioner moisture."},{num:"O",product:"Jojoba Oil",instruction:"Small amount over Curl Love each section.",note:"Seals moisture into shaft."},{num:"C",product:"Asiam DoubleButter Cream",instruction:"Apply and scrunch in.",note:"Final seal + curl definition."}],
     pm:[{num:"1",product:"Sanitize Roller",instruction:"70% isopropyl alcohol. Wait 5 min.",note:null},{num:"2",product:"Derma Roll Scalp",instruction:"Horizontal, vertical, diagonal. 4–5 passes. Light pressure.",note:null},{num:"3",product:"The Ordinary (immediately post-roll)",instruction:"Apply immediately for maximum penetration.",note:null},{num:"4",product:"Root Revive + Pumpkin Seed Oil",instruction:"Follow nightly order.",note:null},{num:"5",product:"Jojoba + Bonnet",instruction:"Seal ends. Cover.",note:null}] },
 ];
 
 const hairRules = [
-  {icon:"⚠",color:"#C0392B",text:"NEVER apply Rogaine within 24 hrs after derma rolling — skip Wed & Sun mornings."},
+  {icon:"⚠",color:"#C0392B",text:"NEVER apply Rogaine to a freshly rolled scalp — skip Wed & Sun mornings. Resume next morning post-shower (13+ hrs after rolling, 12 hr minimum)."},
   {icon:"⚠",color:"#C0392B",text:"NEVER use iRestore on derma roll days (Wed/Sun) — LLLT + microneedling same day = overstimulation."},
   {icon:"⚠",color:"#C0392B",text:"NEVER apply oils to scalp before Rogaine or iRestore — clean dry scalp only for both."},
   {icon:"⚠",color:"#C0392B",text:"NEVER derma roll on an unwashed scalp — wash day timing is mandatory."},
@@ -306,6 +342,8 @@ const hairRules = [
   {icon:"💡",color:"#C9A84C",text:"No conditioner on Briogeo days — charcoal + LOC method is sufficient. Conditioner on Mielle days only."},
   {icon:"✅",color:"#27AE60",text:"Freshly exfoliated scalp on Wednesday = best derma roll + The Ordinary penetration of the week."},
   {icon:"✅",color:"#27AE60",text:"LOC order is non-negotiable: Leave-in → Oil → Cream. Always on damp hair."},
+  {icon:"💡",color:"#C9A84C",text:"Full AM hair stack now runs POST-SHOWER (~8:15 AM), never at 4 AM — sweat from fasted training dilutes minoxidil and blunts LLLT."},
+  {icon:"💡",color:"#C9A84C",text:"Nizoral 1% (ketoconazole) opens both wash days — 2×/week is the evidence-backed dose. It stacks with the oral DHT blocker on a different pathway."},
   {icon:"✅",color:"#27AE60",text:"Batana Oil on ends only (pre-wash). Rich in tocotrienols — superior to Babassu for growth and repair."},
 ];
 
@@ -346,6 +384,7 @@ const skinRules = [
   {icon:"✅",color:"#27AE60",text:"Remove Aztec mask while still slightly damp — cracking = barrier damage."},
   {icon:"✅",color:"#27AE60",text:"Apply HA on slightly damp skin — always. Damp skin = deeper penetration."},
   {icon:"💡",color:"#C9A84C",text:"Refrigerate Faded Eye Masks before use — caffeine + cold temperature maximally reduces puffiness."},
+  {icon:"⚠",color:"#C0392B",text:"Active load is heavy (actives every night + daily 2% SA each morning). If redness, flaking, or stinging appears: swap the AM SA cleanser for a gentle cleanser on Retinol days (Tue/Thu/Sat) until the barrier settles."},
 ];
 
 // ─── NECK + JAW ─────────────────────────────────────────────────
@@ -424,6 +463,7 @@ const neckJawDays = [
 
 const neckJawRules = [
   {icon:"⚠",color:"#C0392B",text:"NEVER do weighted neck work two days in a row — 48hr recovery minimum between strength days."},
+  {icon:"⚠",color:"#C0392B",text:"Mon & Thu: the 100 neck curls in the Do or Die circuit are SKIPPED (marked in the workout tab) — weighted neck work covers it. Both on the same day = 6 neck sessions/week with zero recovery."},
   {icon:"⚠",color:"#C0392B",text:"NEVER train through sharp or shooting neck pain — stop immediately."},
   {icon:"💡",color:"#C9A84C",text:"Mewing is a 24/7 habit, not just during sets. Tongue on roof of mouth, lips sealed, breathing through nose constantly."},
   {icon:"💡",color:"#C9A84C",text:"Jaw exerciser progress is slow — expect 8–12 weeks to see visible masseter definition. Consistency beats intensity."},
@@ -458,17 +498,122 @@ const SecBlock = ({ label, color, children }) => (
   </div>
 );
 
+function RestTimer({ seconds, color, onClose }) {
+  const [remaining, setRemaining] = useState(seconds);
+  const [running, setRunning] = useState(true);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (running && remaining > 0) {
+      ref.current = setTimeout(() => setRemaining(r => r - 1), 1000);
+    } else if (remaining === 0) { setRunning(false); }
+    return () => clearTimeout(ref.current);
+  }, [running, remaining]);
+  const pct = ((seconds - remaining) / seconds) * 100;
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(7,8,10,0.96)", zIndex:100, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:24 }}>
+      <div style={{ fontSize:11, letterSpacing:"0.2em", color:"#484A4C", fontFamily:"monospace" }}>REST TIMER</div>
+      <div style={{ position:"relative", width:180, height:180 }}>
+        <svg width="180" height="180" style={{ transform:"rotate(-90deg)" }}>
+          <circle cx="90" cy="90" r="80" fill="none" stroke="#161719" strokeWidth="8"/>
+          <circle cx="90" cy="90" r="80" fill="none" stroke={color} strokeWidth="8"
+            strokeDasharray={String(2 * Math.PI * 80)}
+            strokeDashoffset={String(2 * Math.PI * 80 * (1 - pct / 100))}
+            style={{ transition:"stroke-dashoffset 1s linear" }}/>
+        </svg>
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ fontSize:48, color:"#EAE8E2", fontFamily:"monospace", fontWeight:700 }}>{m}:{s.toString().padStart(2, "0")}</div>
+          <div style={{ fontSize:11, color:"#484A4C", fontFamily:"monospace" }}>{remaining === 0 ? "DONE — GO!" : "RESTING"}</div>
+        </div>
+      </div>
+      <div style={{ display:"flex", gap:12 }}>
+        <button onClick={() => setRunning(r => !r)} style={{ padding:"10px 20px", borderRadius:8, background:"#161719", border:"1px solid #2A2C2E", color:"#EAE8E2", fontSize:13, cursor:"pointer" }}>{running ? "Pause" : "Resume"}</button>
+        <button onClick={onClose} style={{ padding:"10px 20px", borderRadius:8, background:color, border:"none", color:"#07080A", fontSize:13, fontWeight:700, cursor:"pointer" }}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+function FastClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+  const h = now.getHours();
+  const isSunday = now.getDay() === 0;
+  const inWindow = isSunday ? false : (h >= 9 && h < 17);
+  let target = new Date(now);
+  if (isSunday) {
+    if (h < 17) { target.setHours(17, 0, 0, 0); }
+    else { target.setDate(target.getDate() + 1); target.setHours(9, 0, 0, 0); }
+  } else if (inWindow) { target.setHours(17, 0, 0, 0); }
+  else if (h < 9) { target.setHours(9, 0, 0, 0); }
+  else { target.setDate(target.getDate() + 1); target.setHours(9, 0, 0, 0); }
+  const diffMs = target - now;
+  const hrs = Math.floor(diffMs / 3600000);
+  const mins = Math.floor((diffMs % 3600000) / 60000);
+  const totalWindow = inWindow ? 8 * 60 : (isSunday ? 24 * 60 : 16 * 60);
+  const elapsed = totalWindow - (hrs * 60 + mins);
+  const pct = Math.max(0, Math.min(100, Math.round(elapsed / totalWindow * 100)));
+  const accent = inWindow ? "#3A8F5C" : "#6B4FBB";
+  return (
+    <div style={{ marginBottom:14, background:"#0B0C0E", border:`1px solid ${accent}30`, borderRadius:12, padding:"14px 16px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <div>
+          <div style={{ fontSize:8, color:accent, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:3 }}>
+            {isSunday ? "🔒 SUNDAY 24-HR FAST — AUTOPHAGY + HGH ACTIVE" : inWindow ? "🍽 EATING WINDOW OPEN" : "🔒 FASTING — HGH + AUTOPHAGY ACTIVE"}
+          </div>
+          <div style={{ fontSize:20, color:"#EAE8E2", fontFamily:"monospace", fontWeight:700 }}>
+            {hrs}h {mins}m
+            <span style={{ fontSize:11, color:"#484A4C", fontWeight:400, marginLeft:6 }}>
+              {isSunday && h < 17 ? "until 5 PM refeed" : inWindow ? "until 5 PM cutoff" : "until 9 AM break-fast"}
+            </span>
+          </div>
+        </div>
+        <div style={{ fontSize:24 }}>{inWindow ? "🍽" : "🌙"}</div>
+      </div>
+      <div style={{ height:5, background:"#161719", borderRadius:3, overflow:"hidden" }}>
+        <div style={{ height:"100%", width:pct + "%", background:accent, borderRadius:3, transition:"width 1s" }}/>
+      </div>
+      <div style={{ fontSize:9, color:"#484A4C", fontFamily:"monospace", marginTop:5 }}>
+        {inWindow ? "Every meal inside this window. Front-load protein early." : "Water, green tea, electrolytes only. Every hour is working for you."}
+      </div>
+    </div>
+  );
+}
+
 export default function Protocol() {
-  const [tab, setTab] = useState("schedule");
-  const [day, setDay] = useState(T);
+  const jsDay = new Date().getDay();               // 0 = Sunday
+  const todayAbbr = ABBR[jsDay];
+  const todayWDIdx = (jsDay + 6) % 7;              // weekDays array starts Monday
+  const todayIsSunday = jsDay === 0;
+  const todayMealKey = todayIsSunday ? S : T;
+
+  const [tab, setTab] = useState("today");
+  const [day, setDay] = useState(todayMealKey);
   const [openMeal, setOpenMeal] = useState(null);
-  const [activeWD, setActiveWD] = useState(0);
+  const [activeWD, setActiveWD] = useState(todayWDIdx);
   const [showDOD, setShowDOD] = useState(false);
-  const [activeHD, setActiveHD] = useState(0);
-  const [activeSD, setActiveSD] = useState(0);
-  const [activeSuppDay, setActiveSuppDay] = useState("Mon");
-  const [activeNJDay, setActiveNJDay] = useState(0);
+  const [activeHD, setActiveHD] = useState(todayWDIdx);
+  const [activeSD, setActiveSD] = useState(todayWDIdx);
+  const [activeSuppDay, setActiveSuppDay] = useState(todayAbbr);
+  const [activeNJDay, setActiveNJDay] = useState(todayWDIdx);
   const [groceryView, setGroceryView] = useState("list");
+  const [timer, setTimer] = useState(null);
+
+  // Persistent tracking state
+  const [dodChecked, setDodChecked] = useStored("dod", {});
+  const [exChecked, setExChecked] = useStored("ex", {});
+  const [suppChecked, setSuppChecked] = useStored("supp", {});
+  const [mealChecked, setMealChecked] = useStored("meal", {});
+  const [groceryChecked, setGroceryChecked] = useStored("grocery", {});
+  const [notes, setNotes] = useStored("notes", {});
+  const [water, setWater] = useStored("water", 0);
+  const [sleepLog, setSleepLog] = useStored("sleep", {});
+  const [history, setHistory] = useStored("history", []);
+  const [lastDate, setLastDate] = useStored("lastDate", todayStr());
 
   const current = meals[day];
   const totals = calcDay(current);
@@ -478,6 +623,56 @@ export default function Protocol() {
   const wDay = weekDays[activeWD];
   const hDay = hairDays[activeHD];
   const sDay = skinDays[activeSD];
+
+  // Today's tracking counts
+  const todayWD = weekDays[todayWDIdx];
+  const todayMeals = meals[todayMealKey];
+  const todaySuppBlocks = suppByDay[todayAbbr];
+  const totalSuppsToday = todaySuppBlocks.reduce((a, b) => a + b.supps.length, 0);
+  const todaySuppDone = Object.entries(suppChecked).filter(([k, v]) => v && k.indexOf(todayAbbr + "-") === 0).length;
+  const todayDODDone = Object.values(dodChecked).filter(Boolean).length;
+  const todayExDone = Object.entries(exChecked).filter(([k, v]) => v && k.indexOf(todayWD.day + "-") === 0).length;
+  const todayMealDone = todayMeals.filter(m => mealChecked[m.id]).length;
+  const todaySleep = sleepLog[todayStr()] || { bed:"", hours:"" };
+
+  // Midnight auto-reset: archive yesterday, clear daily checks
+  useEffect(() => {
+    const current = todayStr();
+    if (lastDate !== current) {
+      const prevJsDay = new Date(lastDate + "T12:00:00").getDay();
+      const prevAbbr = ABBR[prevJsDay];
+      const prevSuppTotal = suppByDay[prevAbbr].reduce((a, b) => a + b.supps.length, 0);
+      const prevSuppDone = Object.entries(suppChecked).filter(([k, v]) => v && k.indexOf(prevAbbr + "-") === 0).length;
+      const prevMealsTotal = prevJsDay === 0 ? 1 : 4;
+      const prevMealDone = Object.values(mealChecked).filter(Boolean).length;
+      const prevDodDone = Object.values(dodChecked).filter(Boolean).length;
+      const prevExDone = Object.values(exChecked).filter(Boolean).length;
+      const score = Math.round((
+        Math.min(1, prevMealDone / prevMealsTotal) * 0.35 +
+        Math.min(1, prevSuppDone / prevSuppTotal) * 0.25 +
+        Math.min(1, prevExDone / 5) * 0.25 +
+        Math.min(1, water / WATER_TARGET) * 0.15
+      ) * 100);
+      const entry = { date:lastDate, supp:prevSuppDone, suppTotal:prevSuppTotal, dod:prevDodDone, dodTotal:DOD.length, ex:prevExDone, meals:Math.min(prevMealDone, prevMealsTotal), mealsTotal:prevMealsTotal, water:water, score:score };
+      setHistory(h => [...h.slice(-60), entry]);
+      setSuppChecked({});
+      setDodChecked({});
+      setExChecked({});
+      setMealChecked({});
+      setWater(0);
+      setLastDate(current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Streak: consecutive trailing days scoring 70%+
+  let streak = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].score >= 70) streak++;
+    else break;
+  }
+  const last7 = history.slice(-7);
+  const avgScore = last7.length ? Math.round(last7.reduce((a, e) => a + e.score, 0) / last7.length) : 0;
 
   const ruleBox = (r, i) => (
     <div key={i} style={{ padding:"8px 12px", marginBottom:5, borderRadius:7, background:r.color==="#C0392B"?"#2A1010":r.color==="#C9A84C"?"#1E1A0A":"#0A1E12", border:`1px solid ${r.color}25`, fontSize:11, color:"#6A6C6E", lineHeight:1.6 }}>
@@ -510,6 +705,7 @@ export default function Protocol() {
 
   return (
     <div style={{ minHeight:"100vh", background:"#07080A", color:"#EAE8E2", fontFamily:"Palatino Linotype, Palatino, serif", overflowX:"hidden" }}>
+      {timer && <RestTimer seconds={timer.sec} color={timer.color} onClose={()=>setTimer(null)}/>}
 
       {/* ── HEADER ── */}
       <div style={{ background:"linear-gradient(170deg,#07080A 0%,#0C100D 50%,#09080C 100%)", borderBottom:"1px solid #161719", padding:"26px 20px 20px", position:"relative", overflow:"hidden" }}>
@@ -534,6 +730,10 @@ export default function Protocol() {
             <button onClick={()=>setTab("hair")} style={{ padding:"7px 15px", background:tab==="hair"?"#C9A84C18":"#0E0F11", border:`1px solid ${tab==="hair"?"#C9A84C50":"#1A1C1E"}`, borderRadius:6, color:tab==="hair"?"#C9A84C":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>💈  Hair</button>
             <button onClick={()=>setTab("skin")} style={{ padding:"7px 15px", background:tab==="skin"?"#E8B4D018":"#0E0F11", border:`1px solid ${tab==="skin"?"#E8B4D050":"#1A1C1E"}`, borderRadius:6, color:tab==="skin"?"#E8B4D0":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>✨  Skin</button>
             <button onClick={()=>setTab("face")} style={{ padding:"7px 15px", background:tab==="face"?"#4A72D418":"#0E0F11", border:`1px solid ${tab==="face"?"#4A72D450":"#1A1C1E"}`, borderRadius:6, color:tab==="face"?"#4A72D4":"#343638", fontSize:11, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.07em", transition:"all 0.2s" }}>🗿  Face</button>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 13px", background:"#3A8F5C14", border:"1px solid #3A8F5C35", borderRadius:6 }}>
+              <span style={{ fontSize:13, fontWeight:700, color:"#3A8F5C", fontFamily:"monospace" }}>{streak}</span>
+              <span style={{ fontSize:8, color:"#3A8F5C99", fontFamily:"monospace", letterSpacing:"0.1em" }}>DAY STREAK</span>
+            </div>
           </div>
           <div style={{ display:"flex", flexWrap:"wrap", borderTop:"1px solid #161719", paddingTop:14 }}>
             {[{label:"Window",val:"8 hrs",sub:"9AM–5PM",c:"#3A8F5C"},{label:"Calories",val:totals.cal.toLocaleString(),sub:"kcal",c:"#EAE8E2"},{label:"Protein",val:totals.p+"g",sub:Math.round(totals.p*4/totals.cal*100)+"%",c:"#B84040"},{label:"Carbs",val:totals.c+"g",sub:Math.round(totals.c*4/totals.cal*100)+"%",c:"#C8943A"},{label:"Fats",val:totals.f+"g",sub:Math.round(totals.f*9/totals.cal*100)+"%",c:"#4A72D4"}].map((s,i)=>(
@@ -550,7 +750,7 @@ export default function Protocol() {
       {/* ── TAB BAR ── */}
       <div style={{ borderBottom:"1px solid #161719", background:"#090A0C", position:"sticky", top:0, zIndex:10 }}>
         <div style={{ maxWidth:880, margin:"0 auto", display:"flex", overflowX:"auto" }}>
-          {[["schedule","Schedule"],["workout","Workout"],["meals","Meals"],["supplements","Supps"],["macros","Macros"],["grocery","Grocery"]].map(([id,lbl])=>{
+          {[["today","Today"],["schedule","Schedule"],["workout","Workout"],["meals","Meals"],["supplements","Supps"],["report","Report"],["macros","Macros"],["grocery","Grocery"]].map(([id,lbl])=>{
             const ac = "#3A8F5C";
             return <button key={id} onClick={()=>setTab(id)} style={{ padding:"11px 12px", background:"none", border:"none", color:tab===id?ac:"#282A2C", fontSize:10, cursor:"pointer", letterSpacing:"0.13em", fontFamily:"monospace", textTransform:"uppercase", borderBottom:tab===id?`2px solid ${ac}`:"2px solid transparent", transition:"all 0.2s", whiteSpace:"nowrap" }}>{lbl}</button>;
           })}
@@ -559,6 +759,216 @@ export default function Protocol() {
 
       <div style={{ maxWidth:880, margin:"0 auto", padding:"22px 18px 60px" }}>
 
+        {/* ── TODAY ── */}
+        {tab==="today" && (
+          <div>
+            <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:12 }}>TODAY — {todayWD.day.toUpperCase()} · {todayWD.tag}</div>
+
+            <FastClock/>
+
+            {/* Progress tiles */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:6, marginBottom:14 }}>
+              {[
+                {label:"Supps",done:todaySuppDone,total:totalSuppsToday,color:"#6B4FBB"},
+                {label:"Do or Die",done:todayDODDone,total:DOD.length,color:"#B84040"},
+                {label:"Workout",done:todayExDone,total:todayWD.exercises.length,color:"#4A72D4"},
+                {label:"Meals",done:todayMealDone,total:todayMeals.length,color:"#3A8F5C"},
+              ].map(p=>(
+                <div key={p.label} style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:8, padding:"7px 9px" }}>
+                  <div style={{ fontSize:7, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.08em", marginBottom:3 }}>{p.label}</div>
+                  <div style={{ fontSize:14, color:p.done===p.total&&p.done>0?p.color:"#EAE8E2", fontWeight:700, fontFamily:"monospace" }}>{p.done}<span style={{ fontSize:9, color:"#484A4C" }}>/{p.total}</span></div>
+                  <div style={{ height:2, background:"#161719", borderRadius:1, marginTop:3 }}>
+                    <div style={{ height:"100%", width:p.total>0?Math.round(p.done/p.total*100)+"%":"0%", background:p.color, borderRadius:1, transition:"width 0.3s" }}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick jump to today's session */}
+            <div onClick={()=>{setActiveWD(todayWDIdx);setTab("workout");}} style={{ marginBottom:14, padding:"12px 15px", background:todayWD.color+"10", border:`1px solid ${todayWD.color}30`, borderRadius:10, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <div>
+                <div style={{ fontSize:8, color:todayWD.color, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:2 }}>TODAY'S SESSION{todayWD.dodHalf?" · DOD HALF VOLUME":""}</div>
+                <div style={{ fontSize:13, color:"#EAE8E2" }}>{todayWD.emoji} {todayWD.type}</div>
+              </div>
+              <span style={{ color:todayWD.color, fontSize:16 }}>→</span>
+            </div>
+
+            {/* Water tracker */}
+            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                <div>
+                  <div style={{ fontSize:8, color:"#4A72D4", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>💧 WATER — FASTED TRAINING DEMANDS IT</div>
+                  <div style={{ fontSize:16, color:"#EAE8E2", fontFamily:"monospace", fontWeight:700 }}>{water.toFixed(2)}L <span style={{ fontSize:10, color:"#484A4C", fontWeight:400 }}>/ {WATER_TARGET}L target</span></div>
+                </div>
+                <div style={{ display:"flex", gap:6 }}>
+                  <button onClick={()=>setWater(w=>Math.max(0,Math.round((w-0.25)*100)/100))} style={{ width:32, height:32, borderRadius:8, background:"#161719", border:"none", color:"#EAE8E2", fontSize:15, cursor:"pointer" }}>−</button>
+                  <button onClick={()=>setWater(w=>Math.round((w+0.25)*100)/100)} style={{ width:32, height:32, borderRadius:8, background:"#4A72D4", border:"none", color:"#07080A", fontSize:15, fontWeight:700, cursor:"pointer" }}>+</button>
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:3 }}>
+                {Array.from({length:16}).map((_,i)=>(
+                  <div key={i} style={{ flex:1, height:6, borderRadius:2, background:i<Math.round(water/WATER_TARGET*16)?"#4A72D4":"#161719", transition:"background 0.2s" }}/>
+                ))}
+              </div>
+              <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginTop:5 }}>Each tap = 250ml. Front-load 1L before and during the 4:30 AM session.</div>
+            </div>
+
+            {/* Sleep log */}
+            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+              <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:8 }}>😴 SLEEP LOG — LAST NIGHT</div>
+              <div style={{ display:"flex", gap:10 }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:3 }}>BEDTIME</div>
+                  <input type="time" value={todaySleep.bed} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,bed:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:"#0E0F11", border:"1px solid #161719", borderRadius:7, color:"#EAE8E2", fontSize:12, fontFamily:"monospace" }}/>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:3 }}>HOURS SLEPT</div>
+                  <input type="number" step="0.5" min="0" max="12" placeholder="7.0" value={todaySleep.hours} onChange={e=>setSleepLog(p=>({...p,[todayStr()]:{...todaySleep,hours:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:"#0E0F11", border:"1px solid #161719", borderRadius:7, color:"#EAE8E2", fontSize:12, fontFamily:"monospace" }}/>
+                </div>
+              </div>
+              {todaySleep.hours && Number(todaySleep.hours) < 6 && (
+                <div style={{ marginTop:8, padding:"7px 10px", background:"#B8404012", border:"1px solid #B8404025", borderRadius:7, fontSize:9, color:"#B84040" }}>
+                  Under 6 hours. Recovery is compromised — consider halving today's Do or Die volume and prioritizing the 9:30 PM lights-out tonight.
+                </div>
+              )}
+            </div>
+
+            {/* Supplement checklist for today */}
+            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
+              <div style={{ padding:"12px 14px", borderBottom:"1px solid #161719", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div>
+                  <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>SUPPLEMENTS — {todayAbbr.toUpperCase()}</div>
+                  <div style={{ fontSize:13, color:"#EAE8E2" }}>{todaySuppDone} of {totalSuppsToday} taken</div>
+                </div>
+                <button onClick={()=>setSuppChecked(p=>{const n={...p};Object.keys(n).forEach(k=>{if(k.indexOf(todayAbbr+"-")===0)delete n[k];});return n;})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+              </div>
+              {todaySuppBlocks.map((block,bi)=>(
+                <div key={bi}>
+                  <div style={{ padding:"6px 14px", background:"#0D0E10", borderBottom:"1px solid #161719" }}>
+                    <span style={{ fontSize:8, color:block.color==="#1E2022"?"#484A4C":block.color, fontFamily:"monospace", letterSpacing:"0.1em" }}>{block.icon} {block.time} — {block.label}</span>
+                  </div>
+                  {block.supps.map((s,si)=>{
+                    const key = todayAbbr + "-" + bi + "-" + si;
+                    const done = suppChecked[key];
+                    const bColor = block.color==="#1E2022" ? "#4A72D4" : block.color;
+                    return (
+                      <div key={si} onClick={()=>setSuppChecked(p=>({...p,[key]:!p[key]}))} style={{ padding:"9px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(bColor+"08"):"#0B0C0E", borderBottom:"1px solid #101214" }}>
+                        <div style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${done?bColor:"#242628"}`, background:done?bColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                          {done && <span style={{ fontSize:9, color:"#07080A" }}>✓</span>}
+                        </div>
+                        <span style={{ fontSize:11, color:done?"#484A4C":"#A8A6A0", textDecoration:done?"line-through":"none" }}>{s.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {/* Meal checklist for today */}
+            <div style={{ marginBottom:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
+              <div style={{ padding:"12px 14px", borderBottom:"1px solid #161719", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div>
+                  <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>MEALS{todayIsSunday?" — 24-HR FAST: SINGLE REFEED":""}</div>
+                  <div style={{ fontSize:13, color:"#EAE8E2" }}>{todayMealDone} of {todayMeals.length} eaten</div>
+                </div>
+                <button onClick={()=>setMealChecked({})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+              </div>
+              {todayMeals.map((meal,mi)=>{
+                const done = mealChecked[meal.id];
+                const mp = sum(meal.items,"p");
+                const mcal = sum(meal.items,"cal");
+                return (
+                  <div key={mi} onClick={()=>setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}))} style={{ padding:"11px 14px", display:"flex", alignItems:"center", gap:10, cursor:"pointer", background:done?(meal.color+"08"):"#0B0C0E", borderBottom:"1px solid #101214" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${done?meal.color:"#242628"}`, background:done?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                      {done && <span style={{ fontSize:9, color:"#07080A" }}>✓</span>}
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:12, color:done?"#484A4C":"#EAE8E2", textDecoration:done?"line-through":"none" }}>{meal.emoji} {meal.title}</div>
+                      <div style={{ fontSize:9, color:"#484A4C", fontFamily:"monospace" }}>{meal.time} · {mp}g protein · {mcal} kcal</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Notes */}
+            <div style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"12px 14px" }}>
+              <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:7 }}>TODAY'S NOTES</div>
+              <textarea value={notes[todayStr()]||""} onChange={e=>setNotes(p=>({...p,[todayStr()]:e.target.value}))} placeholder="Session feel? PRs? Energy levels? Anything to note..." style={{ width:"100%", minHeight:70, background:"transparent", border:"none", color:"#EAE8E2", fontSize:11, fontFamily:"inherit", resize:"none", outline:"none", lineHeight:1.6 }}/>
+            </div>
+          </div>
+        )}
+
+        {/* ── REPORT ── */}
+        {tab==="report" && (
+          <div>
+            <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:14 }}>WEEKLY REPORT CARD</div>
+
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
+              <div style={{ padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
+                <div style={{ fontSize:32, fontWeight:700, color:avgScore>=80?"#3A8F5C":avgScore>=60?"#C8943A":"#B84040", fontFamily:"monospace" }}>{avgScore}%</div>
+                <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.12em" }}>7-DAY COMPLIANCE</div>
+              </div>
+              <div style={{ padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C25", borderRadius:12, textAlign:"center" }}>
+                <div style={{ fontSize:32, fontWeight:700, color:"#3A8F5C", fontFamily:"monospace" }}>{streak}</div>
+                <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", letterSpacing:"0.12em" }}>DAY STREAK (70%+ DAYS)</div>
+              </div>
+            </div>
+
+            {last7.length === 0 ? (
+              <div style={{ padding:"24px 18px", background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, textAlign:"center" }}>
+                <div style={{ fontSize:28, marginBottom:8 }}>📊</div>
+                <div style={{ fontSize:13, color:"#EAE8E2", marginBottom:5 }}>No history yet</div>
+                <div style={{ fontSize:11, color:"#484A4C", lineHeight:1.6 }}>Complete your first full day of check-offs. At midnight, today's results are archived automatically and your report builds from there. Day by day. Rep by rep.</div>
+              </div>
+            ) : (
+              <div style={{ background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, overflow:"hidden" }}>
+                {last7.slice().reverse().map((e,i)=>{
+                  const dayName = ABBR[new Date(e.date+"T12:00:00").getDay()];
+                  return (
+                    <div key={i} style={{ padding:"12px 15px", borderBottom:"1px solid #101214", display:"flex", alignItems:"center", gap:12 }}>
+                      <div style={{ minWidth:64 }}>
+                        <div style={{ fontSize:11, color:"#EAE8E2" }}>{dayName}</div>
+                        <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace" }}>{e.date.slice(5)}</div>
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:"flex", gap:8, marginBottom:4, flexWrap:"wrap" }}>
+                          <span style={{ fontSize:9, color:"#6B4FBB", fontFamily:"monospace" }}>Supps {e.supp}/{e.suppTotal}</span>
+                          <span style={{ fontSize:9, color:"#B84040", fontFamily:"monospace" }}>DOD {e.dod}/{e.dodTotal}</span>
+                          <span style={{ fontSize:9, color:"#3A8F5C", fontFamily:"monospace" }}>Meals {e.meals}/{e.mealsTotal}</span>
+                          <span style={{ fontSize:9, color:"#4A72D4", fontFamily:"monospace" }}>{(e.water||0).toFixed(1)}L</span>
+                        </div>
+                        <div style={{ height:4, background:"#161719", borderRadius:2 }}>
+                          <div style={{ height:"100%", width:e.score+"%", background:e.score>=80?"#3A8F5C":e.score>=60?"#C8943A":"#B84040", borderRadius:2 }}/>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:15, fontWeight:700, fontFamily:"monospace", color:e.score>=80?"#3A8F5C":e.score>=60?"#C8943A":"#B84040", minWidth:44, textAlign:"right" }}>{e.score}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sleep history */}
+            <div style={{ marginTop:14, background:"#0B0C0E", border:"1px solid #161719", borderRadius:12, padding:"13px 15px" }}>
+              <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:9 }}>😴 SLEEP — LAST 7 ENTRIES</div>
+              {Object.entries(sleepLog).slice(-7).reverse().map(([date,s],i)=>(
+                <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid #101214" }}>
+                  <span style={{ fontSize:10, color:"#484A4C", fontFamily:"monospace" }}>{date.slice(5)}</span>
+                  <span style={{ fontSize:10, color:"#EAE8E2", fontFamily:"monospace" }}>{s.bed||"—"} bed · {s.hours||"—"}h</span>
+                  <span style={{ fontSize:10, fontFamily:"monospace", color:Number(s.hours)>=7?"#3A8F5C":Number(s.hours)>=6?"#C8943A":"#B84040" }}>{Number(s.hours)>=7?"TARGET":Number(s.hours)>=6?"OK":"LOW"}</span>
+                </div>
+              ))}
+              {Object.keys(sleepLog).length===0 && <div style={{ fontSize:10, color:"#484A4C" }}>Log tonight's sleep on the Today tab.</div>}
+            </div>
+
+            <div style={{ marginTop:14, padding:"14px", background:"#0B0C0E", border:"1px solid #3A8F5C12", borderRadius:12 }}>
+              <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.18em", fontFamily:"monospace", marginBottom:7 }}>HOW THE SCORE WORKS</div>
+              <div style={{ fontSize:10, color:"#484A4C", lineHeight:1.7 }}>Meals 35% · Supplements 25% · Workout 25% · Water 15%. Green at 80%+, yellow at 60–79%, red below. Days at 70%+ extend your streak. History archives automatically at midnight — nothing to log manually. Grocery checks and notes are never reset.</div>
+            </div>
+          </div>
+        )}
+
         {/* ── SCHEDULE ── */}
         {tab==="schedule" && (
           <div>
@@ -566,10 +976,10 @@ export default function Protocol() {
             <div style={{ position:"relative" }}>
               <div style={{ position:"absolute", left:17, top:8, bottom:8, width:1, background:"linear-gradient(to bottom,#6B4FBB40,#B8404040,#C8943A40,#3A8F5C40,#4A72D440,#16171940)" }} />
               {[
-                {t:"4:00 AM",icon:"🙏",l:"Wake · Prayer · Pre-Training",c:"#6B4FBB",b:"B12 sublingual. Vitality (2 caps). Beet Root + Maca. Pre-Workout. Hair: Rogaine to scalp (skip Wed/Sun), Copenhagen Activator 10 min later."},
+                {t:"4:00 AM",icon:"🙏",l:"Wake · Prayer · Pre-Training",c:"#6B4FBB",b:"B12 sublingual. Vitality (2 caps). Beet Root + Maca. Pre-Workout. No hair products — full AM hair stack moved to post-shower at 8 AM."},
                 {t:"4:30 AM",icon:"🏋️",l:"Do or Die Circuit",c:"#B84040",b:"100-rep sets across 27 movements + push-up ladder."},
                 {t:"5:30 AM",icon:"💪",l:"Main Session",c:"#B84040",b:"Mon: Strength · Tue: Power · Wed: Conditioning · Thu: Hypertrophy · Fri: Posterior · Sat: Operator · Sun: Recovery."},
-                {t:"8:00 AM",icon:"🍵",l:"Green Tea + L-Theanine · Skin AM Begins",c:"#C8943A",b:"SA Cleanser → Vit C → HA → Alpha Arbutin → Cetaphil → SPF 70. Green Tea + L-Theanine."},
+                {t:"8:00 AM",icon:"🍵",l:"Shower · Hair AM Stack · Skin AM · Green Tea",c:"#C8943A",b:"Post-workout shower first. Hair: iRestore 25 min (Mon/Thu/Sat) → Rogaine → Activator (skip Rogaine Wed/Sun). Skin: SA Cleanser → Vit C → HA → Alpha Arbutin → Cetaphil → SPF 70. Green Tea + L-Theanine."},
                 {t:"9:00 AM",icon:"🍳",l:"Break Fast — Meal 1 + Morning Supps",c:"#3A8F5C",b:"Eggs + whey + oats + banana. D3/K2 softgels. Anabolic window open."},
                 {t:"12:00 PM",icon:"🥬",l:"Meal 2 — Performance Lunch + Supergreens",c:"#3A8F5C",b:"Chicken + rice + kale + broccoli + avocado + sauerkraut. Zena Greens in water."},
                 {t:"2:30 PM",icon:"🍓",l:"Meal 3 — Fruit + Protein Snack",c:"#B84040",b:"Greek yogurt + mango + kiwi + pomegranate."},
@@ -619,21 +1029,28 @@ export default function Protocol() {
                   <div style={{ marginBottom:18 }}>
                     <button onClick={()=>setShowDOD(!showDOD)} style={{ width:"100%", padding:"11px 14px", background:"#0E0F11", border:"1px solid #1A1C1E", borderRadius:10, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:showDOD?8:0 }}>
                       <div style={{ textAlign:"left" }}>
-                        <div style={{ fontSize:9, color:"#B84040", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:2 }}>DO OR DIE CIRCUIT — OPENS EVERY SESSION</div>
-                        <div style={{ fontSize:11, color:"#5A5C5E" }}>27 movements · 100-rep sets + push-up ladder</div>
+                        <div style={{ fontSize:9, color:"#B84040", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:2 }}>{wDay.dodHalf?"DO OR DIE — HALF VOLUME TODAY (50 REPS PER MOVEMENT)":"DO OR DIE CIRCUIT — FULL VOLUME"}</div>
+                        <div style={{ fontSize:11, color:"#5A5C5E" }}>{Object.values(dodChecked).filter(Boolean).length}/{DOD.length} completed{wDay.dodHalf?" · fatigue management day":" · 100-rep sets + push-up ladder"}</div>
                       </div>
                       <span style={{ color:"#282A2C", fontSize:18 }}>{showDOD?"−":"+"}</span>
                     </button>
                     {showDOD && (
                       <div style={{ background:"#0B0C0E", border:"1px solid #B8404018", borderRadius:10, padding:"12px 14px" }}>
                         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(210px,1fr))", gap:5 }}>
-                          {wDay.doOrDie.map((ex,i)=>(
-                            <div key={i} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 0", borderBottom:"1px solid #0E0F11" }}>
-                              <div style={{ width:4, height:4, borderRadius:"50%", background:"#B84040", flexShrink:0 }} />
-                              <span style={{ fontSize:11, color:"#484A4C" }}>{ex}</span>
-                            </div>
-                          ))}
+                          {wDay.doOrDie.map((ex,i)=>{
+                            const done = dodChecked[i];
+                            const skipToday = ex.indexOf("Neck Curls")>=0 && (wDay.day==="Monday"||wDay.day==="Thursday");
+                            return (
+                              <div key={i} onClick={()=>{if(!skipToday)setDodChecked(p=>({...p,[i]:!p[i]}));}} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 0", borderBottom:"1px solid #0E0F11", cursor:skipToday?"default":"pointer", opacity:skipToday?0.55:1 }}>
+                                <div style={{ width:15, height:15, borderRadius:"50%", border:`2px solid ${skipToday?"#1A1C1E":done?"#B84040":"#242628"}`, background:done&&!skipToday?"#B84040":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                                  {skipToday ? <span style={{ fontSize:7, color:"#343638" }}>×</span> : done && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                                </div>
+                                <span style={{ fontSize:11, color:skipToday?"#343638":done?"#343638":"#484A4C", textDecoration:done&&!skipToday?"line-through":skipToday?"line-through":"none" }}>{ex}{skipToday && <span style={{ fontSize:8, color:"#B84040", fontFamily:"monospace", marginLeft:5 }}>SKIP — WEIGHTED NECK DAY</span>}</span>
+                              </div>
+                            );
+                          })}
                         </div>
+                        <button onClick={()=>setDodChecked({})} style={{ marginTop:9, fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
                       </div>
                     )}
                   </div>
@@ -694,17 +1111,30 @@ export default function Protocol() {
                   <div style={{ marginBottom:14 }}>
                     <div style={{ fontSize:9, color:wDay.color, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:9 }}>MAIN SESSION</div>
                     <div style={{ overflowX:"auto" }}>
-                      <table style={{ width:"100%", borderCollapse:"collapse", minWidth:480 }}>
-                        <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["Exercise","Sets","Reps","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:"#242628", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
-                        <tbody>{wDay.exercises.map((ex,i)=>(
-                          <tr key={i} style={{ borderBottom:"1px solid #0D0E10" }}>
-                            <td style={{ padding:"9px 7px", fontSize:11, color:"#9A9890" }}>{ex.name}</td>
+                      <table style={{ width:"100%", borderCollapse:"collapse", minWidth:520 }}>
+                        <thead><tr style={{ borderBottom:"1px solid #141516" }}>{["✓","Exercise","Sets","Reps","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:"#242628", fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
+                        <tbody>{wDay.exercises.map((ex,i)=>{
+                          const exKey = wDay.day + "-" + i;
+                          const exDone = exChecked[exKey];
+                          const rSec = restToSec(ex.rest);
+                          return (
+                          <tr key={i} style={{ borderBottom:"1px solid #0D0E10", background:exDone?wDay.color+"08":"transparent" }}>
+                            <td style={{ padding:"9px 7px", verticalAlign:"top" }}>
+                              <div onClick={()=>setExChecked(p=>({...p,[exKey]:!p[exKey]}))} style={{ width:18, height:18, borderRadius:"50%", border:`2px solid ${exDone?wDay.color:"#242628"}`, background:exDone?wDay.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", transition:"all 0.15s" }}>
+                                {exDone && <span style={{ fontSize:8, color:"#07080A" }}>✓</span>}
+                              </div>
+                            </td>
+                            <td style={{ padding:"9px 7px", fontSize:11, color:exDone?"#484A4C":"#9A9890", textDecoration:exDone?"line-through":"none" }}>{ex.name}</td>
                             <td style={{ padding:"9px 7px", fontSize:12, color:wDay.color, fontFamily:"monospace", textAlign:"center" }}>{ex.sets}</td>
                             <td style={{ padding:"9px 7px", fontSize:12, color:"#C8943A", fontFamily:"monospace" }}>{ex.reps}</td>
-                            <td style={{ padding:"9px 7px", fontSize:11, color:"#404244", fontFamily:"monospace", whiteSpace:"nowrap" }}>{ex.rest}</td>
+                            <td style={{ padding:"9px 7px", fontSize:11, color:"#404244", fontFamily:"monospace", whiteSpace:"nowrap" }}>
+                              {ex.rest}
+                              {rSec > 0 && <button onClick={()=>setTimer({sec:rSec,color:wDay.color})} style={{ display:"block", marginTop:4, padding:"3px 8px", borderRadius:6, background:wDay.color+"14", border:`1px solid ${wDay.color}25`, color:wDay.color, fontSize:8, cursor:"pointer", fontFamily:"monospace" }}>⏱ START</button>}
+                            </td>
                             <td style={{ padding:"9px 7px", fontSize:10, color:"#343638" }}>{ex.focus}</td>
                           </tr>
-                        ))}</tbody>
+                          );
+                        })}</tbody>
                       </table>
                     </div>
                   </div>
@@ -734,6 +1164,30 @@ export default function Protocol() {
                 </div>
               ))}
             </div>
+            {/* Running totals from checked meals */}
+            <div style={{ padding:"10px 14px", background:"#0B0C0E", border:"1px solid #161719", borderRadius:9, marginBottom:14 }}>
+              <div style={{ fontSize:8, color:"#3A8F5C", fontFamily:"monospace", letterSpacing:"0.12em", marginBottom:6 }}>RUNNING TOTALS — {current.filter(m=>mealChecked[m.id]).length}/{current.length} MEALS EATEN (TAP CIRCLES BELOW)</div>
+              <div style={{ display:"flex", gap:12 }}>
+                {(()=>{
+                  const eaten = current.filter(m=>mealChecked[m.id]);
+                  const t2 = calcDay(eaten);
+                  return [
+                    {l:"Protein",v:t2.p,max:totals.p,c:"#B84040"},
+                    {l:"Carbs",v:t2.c,max:totals.c,c:"#C8943A"},
+                    {l:"Fat",v:t2.f,max:totals.f,c:"#4A72D4"},
+                    {l:"Calories",v:t2.cal,max:totals.cal,c:"#3A8F5C"},
+                  ].map(macro=>(
+                    <div key={macro.l} style={{ flex:1 }}>
+                      <div style={{ fontSize:8, color:"#484A4C", fontFamily:"monospace", marginBottom:2 }}>{macro.l}</div>
+                      <div style={{ fontSize:12, color:macro.c, fontFamily:"monospace" }}>{macro.v}<span style={{ fontSize:7, color:"#2C2E30" }}>/{macro.max}</span></div>
+                      <div style={{ height:2, background:"#161719", borderRadius:1, marginTop:2 }}>
+                        <div style={{ height:"100%", width:Math.min(100,macro.max>0?Math.round(macro.v/macro.max*100):0)+"%", background:macro.c, borderRadius:1 }}/>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
             {day===S && (
               <div style={{ padding:"12px 16px", background:"#0D0A1A", border:"1px solid #6B4FBB30", borderRadius:10, marginBottom:14 }}>
                 <div style={{ fontSize:9, color:"#6B4FBB", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:6 }}>⚡ 24-HOUR AUTOPHAGY FAST — SAT 5 PM → SUN 5 PM</div>
@@ -752,6 +1206,9 @@ export default function Protocol() {
               return (
                 <div key={meal.id} style={{ marginBottom:7, border:`1px solid ${isOpen?meal.color+"30":"#161719"}`, borderRadius:12, overflow:"hidden", background:isOpen?"#0C0D0F":"#0B0C0E" }}>
                   <div onClick={()=>setOpenMeal(isOpen?null:meal.id)} style={{ padding:"13px 17px", cursor:"pointer", display:"flex", alignItems:"center", gap:11 }}>
+                    <div onClick={(e)=>{e.stopPropagation();setMealChecked(p=>({...p,[meal.id]:!p[meal.id]}));}} style={{ width:22, height:22, borderRadius:"50%", border:`2px solid ${mealChecked[meal.id]?meal.color:"#242628"}`, background:mealChecked[meal.id]?meal.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                      {mealChecked[meal.id] && <span style={{ fontSize:10, color:"#07080A" }}>✓</span>}
+                    </div>
                     <div style={{ width:38, height:38, borderRadius:8, background:meal.color+"14", border:`1px solid ${meal.color}20`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>{meal.emoji}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ display:"flex", gap:7, alignItems:"center", marginBottom:1, flexWrap:"wrap" }}>
@@ -853,15 +1310,22 @@ export default function Protocol() {
                         <span style={{ fontSize:11, color:isDark?"#282A2C":block.color, fontFamily:"monospace", fontWeight:700 }}>{block.time}</span>
                         <span style={{ fontSize:11, color:"#5A5C5E" }}>{block.label}</span>
                       </div>
-                      {block.supps.map((s,j)=>(
-                        <div key={j} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?"1px solid #0D0E10":"none" }}>
-                          <div style={{ width:4, height:4, borderRadius:"50%", background:isDark?"#282A2C":block.color, flexShrink:0, marginTop:4 }} />
+                      {block.supps.map((s,j)=>{
+                        const sKey = activeSuppDay + "-" + i + "-" + j;
+                        const sDone = suppChecked[sKey];
+                        const sColor = isDark ? "#4A72D4" : block.color;
+                        return (
+                        <div key={j} onClick={()=>setSuppChecked(p=>({...p,[sKey]:!p[sKey]}))} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, paddingBottom:6, borderBottom:j<block.supps.length-1?"1px solid #0D0E10":"none", cursor:"pointer" }}>
+                          <div style={{ width:16, height:16, borderRadius:"50%", border:`2px solid ${sDone?sColor:"#242628"}`, background:sDone?sColor:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1, transition:"all 0.15s" }}>
+                            {sDone && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                          </div>
                           <div>
-                            <div style={{ fontSize:11, color:"#A8A6A0", marginBottom:1 }}>{s.name}</div>
+                            <div style={{ fontSize:11, color:sDone?"#484A4C":"#A8A6A0", marginBottom:1, textDecoration:sDone?"line-through":"none" }}>{s.name}</div>
                             <div style={{ fontSize:10, color:"#2C2E30" }}>{s.note}</div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                       {block.warning && <div style={{ marginTop:5, padding:"6px 9px", background:"#C8943A0E", border:"1px solid #C8943A20", borderRadius:6, fontSize:10, color:"#6A5228" }}>{block.warning}</div>}
                     </div>
                   </div>
@@ -909,7 +1373,10 @@ export default function Protocol() {
             </div>
             {groceryView==="list" && (
               <div>
-                <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:16 }}>WEEKLY GROCERY LIST</div>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+                  <div style={{ fontSize:9, color:"#3A8F5C", letterSpacing:"0.22em", fontFamily:"monospace" }}>WEEKLY GROCERY LIST</div>
+                  <button onClick={()=>setGroceryChecked({})} style={{ fontSize:8, color:"#484A4C", background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
+                </div>
                 {grocery.map(cat=>(
                   <div key={cat.cat} style={{ marginBottom:18 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7 }}>
@@ -917,12 +1384,18 @@ export default function Protocol() {
                       <span style={{ fontSize:12, color:"#EAE8E2" }}>{cat.cat}</span>
                     </div>
                     <div style={{ paddingLeft:20 }}>
-                      {cat.items.map(item=>(
-                        <div key={item} style={{ padding:"6px 0", borderBottom:"1px solid #0D0E10", fontSize:11, color:item.includes("Zena")?"#27AE60":"#404244", display:"flex", alignItems:"center", gap:7 }}>
-                          <div style={{ width:3, height:3, borderRadius:"50%", border:`1px solid ${item.includes("Zena")?"#27AE60":"#1A1C1E"}`, flexShrink:0 }} />
+                      {cat.items.map((item,ii)=>{
+                        const gKey = cat.cat + "-" + ii;
+                        const gDone = groceryChecked[gKey];
+                        return (
+                        <div key={item} onClick={()=>setGroceryChecked(p=>({...p,[gKey]:!p[gKey]}))} style={{ padding:"7px 0", borderBottom:"1px solid #0D0E10", fontSize:11, color:gDone?"#242628":item.includes("Zena")?"#27AE60":"#404244", display:"flex", alignItems:"center", gap:9, cursor:"pointer", textDecoration:gDone?"line-through":"none" }}>
+                          <div style={{ width:15, height:15, borderRadius:4, border:`2px solid ${gDone?"#3A8F5C":"#242628"}`, background:gDone?"#3A8F5C":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                            {gDone && <span style={{ fontSize:7, color:"#07080A" }}>✓</span>}
+                          </div>
                           {item}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -994,7 +1467,7 @@ export default function Protocol() {
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{hDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:hDay.color+"12", border:`1px solid ${hDay.color}20`, fontSize:9, color:hDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
               </div>
               <div style={{ padding:"18px 20px" }}>
-                <SecBlock label="🌅 4:00 AM — MORNING" color={hDay.color}><StepList steps={hDay.am} color={hDay.color} /></SecBlock>
+                <SecBlock label="🌅 ~8:15 AM — POST-SHOWER MORNING" color={hDay.color}><StepList steps={hDay.am} color={hDay.color} /></SecBlock>
                 {hDay.washSteps && <>
                   <SecBlock label="🚿 PRE-WASH" color="#C8943A"><StepList steps={hDay.prewash} color="#C8943A" /></SecBlock>
                   {hDay.washType==="briogeo" && <SecBlock label="🧴 WASH — BRIOGEO SCALP EXFOLIATION (NO CONDITIONER)" color="#27AE60"><StepList steps={hDay.wash} color="#27AE60" /></SecBlock>}
@@ -1040,7 +1513,7 @@ export default function Protocol() {
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{sDay.focus.map(f=><span key={f} style={{ padding:"2px 8px", borderRadius:20, background:sDay.color+"12", border:`1px solid ${sDay.color}20`, fontSize:9, color:sDay.color, fontFamily:"monospace" }}>{f}</span>)}</div>
               </div>
               <div style={{ padding:"18px 20px" }}>
-                <SecBlock label="🌅 4:00 AM — MORNING ROUTINE" color={sDay.color}><StepList steps={sDay.am} color={sDay.color} /></SecBlock>
+                <SecBlock label="🌅 8:00 AM — POST-SHOWER MORNING ROUTINE" color={sDay.color}><StepList steps={sDay.am} color={sDay.color} /></SecBlock>
                 <SecBlock label={sDay.day==="Sun"?"🌙 7:30 PM — AZTEC MASK + BARRIER REBUILD":sDay.tag==="RETINOL"?"🌙 7:30 PM — RETINOL SANDWICH":"🌙 7:30 PM — EXFOLIATION"} color={sDay.color}>
                   <StepList steps={sDay.pm} color={sDay.color} />
                 </SecBlock>
