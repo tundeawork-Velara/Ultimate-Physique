@@ -47,6 +47,10 @@ const ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 //  Your greatest level is always the next one."
 // ═══════════════════════════════════════════════════════════
 
+// Drop the URL of your Zenkai ninja mark here (any https image URL, 512x512 PNG ideal).
+// Leave empty and the type-only lockup below is used instead.
+const LOGO_URL = "";
+
 const CRIMSON = "#C4363D";
 const CRIMSON_DEEP = "#8E2C31";
 const EMBER = "#E8A33D";
@@ -82,7 +86,7 @@ const LIFE_QUESTS = [
 const WEEKLY_QUESTS = [
   { id:"date",   title:"Date Night",                    pillar:"family", tier:3 },
   { id:"review", title:"Weekly Review + Financial Review", pillar:"wealth", tier:4 },
-  { id:"ship",   title:"Ship One Piece of Content",     pillar:"craft",  tier:3 },
+  { id:"ship",   title:"Batch-Film + Schedule The Week", pillar:"craft",  tier:4 },
 ];
 
 // Auto-derived quests — read from the systems already in this app
@@ -580,6 +584,18 @@ const neckJawRules = [
   {icon:"✅",color:"#27AE60",text:"Posture is the multiplier. Upright spine + chin tucks makes the neck look longer and the jaw sharper without any exercise."},
 ];
 
+// ─── CONTENT SCHEDULE ───
+// Batch-film Sunday, schedule the whole week. No daily decision — just publish.
+const CONTENT = [
+  { day:"Mon", tiktok:"8:00 PM",  yt:"Short 6:00 PM",              ig:"12:00 PM",  li:null,        note:null },
+  { day:"Tue", tiktok:"8:30 PM",  yt:"Short 7:00 PM",              ig:"7:00 PM",   li:"7:30 AM",   note:"ClearReg primary slot — CCOs pre-market" },
+  { day:"Wed", tiktok:"9:00 PM",  yt:"Short 6:00 PM",              ig:"12:00 PM",  li:"7:30 AM",   note:"IG's best day — push your strongest clip. LinkedIn's best day for comments." },
+  { day:"Thu", tiktok:"8:00 PM",  yt:"Short 7:00 PM",              ig:"7:00 PM",   li:"8:00 AM",   note:"Thursday = decision-maker planning mode" },
+  { day:"Fri", tiktok:"9:00 PM",  yt:"Short 6:00 PM",              ig:"12:00 PM",  li:"7:30 AM",   note:"Friday LinkedIn: lighter, personal tone outperforms" },
+  { day:"Sat", tiktok:"8:00 PM",  yt:"Long-form 2:00 PM + Short 7:00 PM", ig:"11:00 AM", li:null, note:"TikTok's best day" },
+  { day:"Sun", tiktok:"7:00 PM",  yt:"Short 6:00 PM",              ig:"6:00 PM",   li:null,        note:"BATCH DAY — film everything, schedule the week out" },
+];
+
 // ─── HELPERS ────────────────────────────────────────────────────
 const sum = (arr, k) => arr.reduce((a, i) => a + i[k], 0);
 const calcDay = (m) => m.reduce((a, meal) => { a.p+=sum(meal.items,"p"); a.c+=sum(meal.items,"c"); a.f+=sum(meal.items,"f"); a.cal+=sum(meal.items,"cal"); return a; }, {p:0,c:0,f:0,cal:0});
@@ -986,7 +1002,7 @@ export default function Zenkai() {
     );
   };
 
-  const TABS = [["today","Today","⚡"],["reflect","Reflect","🌙"],["character","Character","🎴"],["schedule","Schedule","📅"],["workout","Train","🏋️"],["meals","Meals","🍽️"],["supplements","Stack","💊"],["report","Report","📊"],["macros","Macros","📈"],["grocery","Grocery","🛒"],["hair","Hair","💈"],["skin","Skin","✨"],["face","Face","🗿"]];
+  const TABS = [["today","Today","⚡"],["reflect","Reflect","🌙"],["character","Character","🎴"],["schedule","Schedule","📅"],["workout","Train","🏋️"],["meals","Meals","🍽️"],["supplements","Stack","💊"],["report","Report","📊"],["macros","Macros","📈"],["content","Content","🎬"],["grocery","Grocery","🛒"],["hair","Hair","💈"],["skin","Skin","✨"],["face","Face","🗿"]];
   const visibleTabs = (shadow && !showAll) ? TABS.filter(t => t[0] === "today") : TABS;
 
   return (
@@ -1020,7 +1036,7 @@ export default function Zenkai() {
       )}
 
       {/* ── HEADER / CHARACTER CARD ── */}
-      <div style={{ background:`linear-gradient(165deg,${P["07080A"]} 0%,#1A0C0E 55%,${P["09080C"]} 100%)`, borderBottom:`1px solid ${CRIMSON}25`, padding:"22px 18px 18px", position:"relative", overflow:"hidden" }}>
+      <div style={{ background:`linear-gradient(165deg,${P["07080A"]} 0%,#1A0C0E 55%,${P["09080C"]} 100%)`, borderBottom:`1px solid ${CRIMSON}25`, padding:"calc(env(safe-area-inset-top, 0px) + 22px) 18px 18px", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", inset:0, pointerEvents:"none", background:`radial-gradient(ellipse at 15% 110%, ${CRIMSON}22 0%, transparent 55%)` }} />
         <div style={{ position:"absolute", inset:0, pointerEvents:"none", opacity:0.03, backgroundImage:`radial-gradient(${P["EAE8E2"]} 0.5px, transparent 0.5px)`, backgroundSize:"3px 3px" }} />
         <div style={{ maxWidth:880, margin:"0 auto", position:"relative" }}>
@@ -1028,7 +1044,9 @@ export default function Zenkai() {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
             <div>
               <div style={{ fontSize:8, letterSpacing:"0.3em", color:CRIMSON, fontFamily:"monospace", marginBottom:6 }}>PERSONAL OPERATING SYSTEM</div>
-              <h1 style={{ fontSize:"clamp(30px,8vw,52px)", fontWeight:900, fontStyle:"italic", letterSpacing:"-0.05em", lineHeight:0.9, margin:0, color:P["EAE8E2"], textShadow:`3px 3px 0 ${CRIMSON_DEEP}` }}>ZENKAI</h1>
+              {LOGO_URL
+                ? <img src={LOGO_URL} alt="Zenkai" style={{ height:52, width:"auto", display:"block", margin:"2px 0" }}/>
+                : <h1 style={{ fontSize:"clamp(30px,8vw,52px)", fontWeight:900, fontStyle:"italic", letterSpacing:"-0.05em", lineHeight:0.9, margin:0, color:P["EAE8E2"], textShadow:`3px 3px 0 ${CRIMSON_DEEP}` }}>ZENKAI</h1>}
               <div style={{ fontSize:10, color:P["343638"], marginTop:7, fontStyle:"italic" }}>Your greatest level is always the next one.</div>
             </div>
             <button onClick={()=>setDarkMode(d=>!d)} style={{ padding:"7px 12px", background:P["0E0F11"], border:`1px solid ${P["242628"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:11, cursor:"pointer", flexShrink:0 }}>{darkMode ? "☀️" : "🌙"}</button>
@@ -1060,7 +1078,7 @@ export default function Zenkai() {
       </div>
 
       {/* ── TAB BAR ── */}
-      <div style={{ borderBottom:`1px solid ${P["161719"]}`, background:P["090A0C"], position:"sticky", top:0, zIndex:10 }}>
+      <div style={{ borderBottom:`1px solid ${P["161719"]}`, background:P["090A0C"], position:"sticky", top:"env(safe-area-inset-top, 0px)", zIndex:10 }}>
         <div style={{ maxWidth:880, margin:"0 auto", display:"flex", overflowX:"auto" }}>
           {visibleTabs.map(([id,lbl,ico])=>(
             <button key={id} onClick={()=>setTab(id)} style={{ padding:"8px 13px 9px", background:"none", border:"none", color:tab===id?CRIMSON:P["282A2C"], fontSize:10, cursor:"pointer", letterSpacing:"0.13em", fontFamily:"monospace", textTransform:"uppercase", borderBottom:tab===id?`2px solid ${CRIMSON}`:"2px solid transparent", transition:"all 0.2s", whiteSpace:"nowrap" }}>
@@ -1935,6 +1953,61 @@ export default function Zenkai() {
           </div>
         )}
 
+        {/* ══ CONTENT ══ */}
+        {tab==="content" && (
+          <div>
+            <div style={{ fontSize:9, color:CRIMSON, letterSpacing:"0.22em", fontFamily:"monospace", marginBottom:5 }}>CONTENT SCHEDULE</div>
+            <p style={{ fontSize:11, color:P["343638"], marginBottom:16, lineHeight:1.7 }}>Batch-film Sunday. Schedule the week out. No daily decision required — just publish.</p>
+
+            <div style={{ padding:"12px 14px", background:EMBER+"0C", border:`1px solid ${EMBER}30`, borderRadius:6, marginBottom:16, fontSize:11, color:P["6A6C6E"], lineHeight:1.75 }}>
+              <span style={{ color:EMBER, fontFamily:"monospace", fontSize:8, letterSpacing:"0.14em", display:"block", marginBottom:4 }}>WHY THIS IS ONE WEEKLY QUEST, NOT TWENTY-ONE DAILY ONES</span>
+              Your posting windows are 6–9 PM. That is the daughter block and then the deep work block — the two things you least want a phone in the middle of. Scheduling on Sunday means the posts fire on their own while you're doing something better. That's why "Batch-Film + Schedule The Week" is a Tier 4 keystone quest and daily posting isn't tracked at all.
+            </div>
+
+            {CONTENT.map(row => {
+              const isToday = row.day === todayAbbr;
+              return (
+                <div key={row.day} style={{ marginBottom:7, border:`1px solid ${isToday?CRIMSON+"45":P["161719"]}`, borderRadius:6, overflow:"hidden", background:isToday?CRIMSON+"08":P["0B0C0E"] }}>
+                  <div style={{ padding:"8px 14px", background:isToday?CRIMSON+"14":P["0D0E10"], borderBottom:`1px solid ${P["101214"]}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:11, color:isToday?CRIMSON:P["8A8880"], fontFamily:"monospace", fontWeight:700, letterSpacing:"0.14em" }}>{row.day.toUpperCase()}</span>
+                    {isToday && <span style={{ fontSize:8, color:CRIMSON, fontFamily:"monospace", letterSpacing:"0.12em" }}>TODAY</span>}
+                  </div>
+                  <div style={{ padding:"10px 14px" }}>
+                    {[
+                      { p:"TikTok",    v:row.tiktok, c:"#E8477D" },
+                      { p:"YouTube",   v:row.yt,     c:CRIMSON },
+                      { p:"Instagram", v:row.ig,     c:"#C8943A" },
+                      { p:"LinkedIn",  v:row.li,     c:"#4A72D4", tag:"ClearReg" },
+                    ].filter(x => x.v).map(x => (
+                      <div key={x.p} style={{ display:"flex", alignItems:"center", gap:10, padding:"5px 0", borderBottom:`1px solid ${P["0D0E10"]}` }}>
+                        <div style={{ width:7, height:7, borderRadius:"50%", background:x.c, flexShrink:0 }}/>
+                        <span style={{ fontSize:11, color:P["6A6C6E"], width:74, flexShrink:0 }}>{x.p}</span>
+                        <span style={{ fontSize:11, color:P["C8C6C0"], fontFamily:"monospace", flex:1 }}>{x.v}</span>
+                        {x.tag && <span style={{ fontSize:8, color:x.c, fontFamily:"monospace", padding:"1px 6px", background:x.c+"12", border:`1px solid ${x.c}25`, borderRadius:3 }}>{x.tag}</span>}
+                      </div>
+                    ))}
+                    {row.note && <div style={{ fontSize:10, color:P["484A4C"], marginTop:7, fontStyle:"italic", lineHeight:1.6 }}>{row.note}</div>}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div style={{ marginTop:16, background:P["0B0C0E"], border:`1px solid #4A72D430`, borderRadius:8, padding:"15px 16px" }}>
+              <div style={{ fontSize:8, color:"#4A72D4", fontFamily:"monospace", letterSpacing:"0.16em", marginBottom:10 }}>CLEARREG ON LINKEDIN — WHY THESE TIMES</div>
+              <div style={{ fontSize:11, color:P["6A6C6E"], lineHeight:1.8 }}>
+                Your audience is CCOs at RIA firms. Their day is shaped by the market open at 9:30 ET, so the LinkedIn window closes when the trading day begins — the reading happens over coffee, in the inbox, before anyone needs them.<br/><br/>
+                <b style={{ color:P["C8C6C0"] }}>Primary: Tuesday and Wednesday, 7:30 AM ET.</b> Financial-services engagement concentrates pre-market, and Tuesday–Thursday is the strongest B2B block across every dataset. Monday is lost to weekend catch-up; Friday afternoon and weekends are close to invisible for B2B.<br/><br/>
+                <b style={{ color:P["C8C6C0"] }}>The first 60 minutes decide everything.</b> LinkedIn's algorithm weighs early comment velocity heavily — a post that doesn't move in the first hour mostly doesn't move at all. Post when you can actually reply to the first few comments. That's a better reason to pick 7:30 AM than the heatmap is.<br/><br/>
+                <b style={{ color:P["C8C6C0"] }}>Override the schedule when the SEC does.</b> When a rule, risk alert, or enforcement action drops, publish inside a few hours. Being first on a thing your readers have to act on beats being optimally timed on a thing they don't.
+              </div>
+            </div>
+
+            <div style={{ marginTop:12, padding:"11px 14px", background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:6, fontSize:10, color:P["484A4C"], lineHeight:1.7 }}>
+              Timing is the smallest lever here. Four separate studies agree that consistent posting at a decent hour beats sporadic posting at a perfect one — so if the Sunday batch is the thing that slips, fix that before you touch these numbers.
+            </div>
+          </div>
+        )}
+
         {/* ══ GROCERY ══ */}
         {tab==="grocery" && (
           <div>
@@ -1951,7 +2024,7 @@ export default function Zenkai() {
                 </div>
                 {grocery.map(cat=>(
                   <div key={cat.cat} style={{ marginBottom:18 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7, position:"sticky", top:46, zIndex:4, background:P["07080A"], padding:"6px 0" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:7, position:"sticky", top:"calc(env(safe-area-inset-top, 0px) + 46px)", zIndex:4, background:P["07080A"], padding:"6px 0" }}>
                       <span style={{ fontSize:13 }}>{cat.emoji}</span>
                       <span style={{ fontSize:12, color:P["EAE8E2"] }}>{cat.cat}</span>
                     </div>
@@ -2161,7 +2234,7 @@ export default function Zenkai() {
 
       </div>
 
-      <div style={{ maxWidth:880, margin:"0 auto", padding:"0 18px 40px", textAlign:"center" }}>
+      <div style={{ maxWidth:880, margin:"0 auto", padding:"0 18px calc(env(safe-area-inset-bottom, 0px) + 40px)", textAlign:"center" }}>
         <div style={{ fontSize:9, color:P["242628"], fontFamily:"monospace", letterSpacing:"0.2em" }}>ZENKAI · TUNDE · 185 LBS · 4 AM FASTED</div>
         <div style={{ fontSize:10, color:P["2C2E30"], fontStyle:"italic", marginTop:6 }}>Every setback is experience.</div>
       </div>
