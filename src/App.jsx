@@ -38,6 +38,17 @@ const restToSec = (r) => {
   return r.includes("sec") ? Math.round(avg) : Math.round(avg * 60);
 };
 
+// Sleep duration across midnight. Bed 21:30 -> wake 04:00 = 6.5h.
+const sleepHours = (bed, wake) => {
+  if (!bed || !wake) return null;
+  const [bh, bm] = bed.split(":").map(Number);
+  const [wh, wm] = wake.split(":").map(Number);
+  if ([bh,bm,wh,wm].some(isNaN)) return null;
+  let mins = (wh * 60 + wm) - (bh * 60 + bm);
+  if (mins <= 0) mins += 1440;
+  return Math.round(mins / 60 * 100) / 100;
+};
+
 const WATER_TARGET = 4.0;
 const ABBR = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -750,6 +761,9 @@ export default function Zenkai() {
   const [timer, setTimer] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const [draft, setDraft] = useState({ w1:"", w2:"", w3:"", lesson:"", gratitude:"" });
+  const [zNote, setZNote] = useState("");
+  const [backupMsg, setBackupMsg] = useState("");
+  const fileRef = useRef(null);
 
   // ── physique layer (migrated from Ultimate Physique) ──
   const [dodChecked, setDodChecked] = useStored("dod", {});
@@ -777,6 +791,36 @@ export default function Zenkai() {
 
   const P = darkMode ? PD : PL;
 
+  // ── BACKUP: everything lives in localStorage. Export it or you can lose it. ──
+  const BACKUP_KEYS = ["dod","ex","supp","meal","grocery","notes","water","sleep","history","lastDate","dark",
+    "quests","weeklyQuests","xpLog","bonusXP","resilience","streakState","zenkai","reflections","shadow"];
+
+  const exportData = () => {
+    const dump = { app:"zenkai", version:1, exportedAt:new Date().toISOString(), data:{} };
+    BACKUP_KEYS.forEach(k => { try { const v = window.localStorage.getItem("zk-" + k); if (v !== null) dump.data[k] = JSON.parse(v); } catch(e){} });
+    const blob = new Blob([JSON.stringify(dump, null, 2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "zenkai-backup-" + TODAY + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    setBackupMsg("Exported " + TODAY + ". Put it somewhere that isn't this phone.");
+  };
+
+  const importData = (file) => {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const parsed = JSON.parse(r.result);
+        if (parsed.app !== "zenkai" || !parsed.data) { setBackupMsg("That doesn't look like a Zenkai backup."); return; }
+        Object.entries(parsed.data).forEach(([k,v]) => window.localStorage.setItem("zk-" + k, JSON.stringify(v)));
+        setBackupMsg("Restored from " + (parsed.exportedAt||"").slice(0,10) + ". Reloading…");
+        setTimeout(()=>window.location.reload(), 900);
+      } catch(e) { setBackupMsg("Couldn't read that file."); }
+    };
+    r.readAsText(file);
+  };
+
   const current = meals[day];
   const totals = calcDay(current);
   const tTot = calcDay(meals[T]);
@@ -797,8 +841,15 @@ export default function Zenkai() {
   const todayExDone = Object.entries(exChecked).filter(([k, v]) => v && k.indexOf(todayWD.day + "-") === 0).length;
   const exTotal = todayWD.exercises.length;
   const todayMealDone = todayMeals.filter(m => mealChecked[m.id]).length;
-  const todaySleep = sleepLog[TODAY] || { bed:"", hours:"" };
-  const sleepH = Number(todaySleep.hours) || 0;
+  const todaySleep = sleepLog[TODAY] || { bed:"", wake:"04:00", hours:"" };
+  const autoHours = sleepHours(todaySleep.bed, todaySleep.wake);
+  const sleepH = todaySleep.manual ? (Number(todaySleep.hours) || 0) : (autoHours ?? 0);
+  const setSleep = (patch) => setSleepLog(p => {
+    const rec = { ...(p[TODAY] || { bed:"", wake:"04:00", hours:"" }), ...patch };
+    const auto = sleepHours(rec.bed, rec.wake);
+    if (!rec.manual && auto !== null) rec.hours = String(auto);
+    return { ...p, [TODAY]: rec };
+  });
 
   // ── auto-derived quests ──
   const auto = {
@@ -938,6 +989,25 @@ export default function Zenkai() {
     setZenkai(z => ({ pending:null, moments:[...z.moments, { ...p, recoveredAt:TODAY }].slice(-40) }));
   }, [coreDone, zenkai.pending]);
 
+  // ── BATCH LOGGING: one tap for a whole section. The detail is still there if you want it. ──
+  const allSuppsOn = () => setSuppChecked(p => {
+    const n = { ...p };
+    todaySuppBlocks.forEach((b,bi) => b.supps.forEach((_,si) => { n[todayAbbr+"-"+bi+"-"+si] = true; }));
+    return n;
+  });
+  const allMealsOn = () => setMealChecked(p => {
+    const n = { ...p }; todayMeals.forEach(m => { n[m.id] = true; }); return n;
+  });
+  const allSessionOn = () => setExChecked(p => {
+    const n = { ...p }; todayWD.exercises.forEach((_,i) => { n[todayWD.day+"-"+i] = true; }); return n;
+  });
+  const allDodOn = () => setDodChecked(p => {
+    const n = { ...p }; todayWD.doOrDie.forEach((_,i) => { n[i] = true; }); return n;
+  });
+  const allQuestsOn = () => setQChecked(p => {
+    const n = { ...p }; LIFE_QUESTS.forEach(q => { n[q.id] = true; }); n.prayer = true; n.deepwork = true; return n;
+  });
+
   const toggleQ = (id) => setQChecked(p => ({ ...p, [id]: !p[id] }));
   const toggleWeekly = (id) => setWChecked(p => {
     const cur = p[id];
@@ -1018,7 +1088,7 @@ export default function Zenkai() {
             <div style={{ fontSize:12, color:P["484A4C"], lineHeight:1.7, marginBottom:18 }}>
               The rhythm broke. Your streak held at <span style={{ color:EMBER, fontFamily:"monospace" }}>{zenkai.pending.floor}</span> instead of dropping to zero — that's the floor, and it's yours. Name the cause, come back inside 48 hours, and you take <span style={{ color:EMBER, fontFamily:"monospace" }}>+150 XP</span> and <span style={{ color:EMBER, fontFamily:"monospace" }}>+1 Resilience</span> off it. Resilience never goes down.
             </div>
-            <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:18 }}>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:16 }}>
               {ZENKAI_CAUSES.map(c => (
                 <button key={c} onClick={()=>setZenkai(z=>({...z, pending:{...z.pending, cause:c}}))} style={{ padding:"7px 12px", borderRadius:5, cursor:"pointer",
                   background: zenkai.pending.cause===c ? CRIMSON : P["0E0F11"],
@@ -1026,7 +1096,16 @@ export default function Zenkai() {
                   color: zenkai.pending.cause===c ? "#08080A" : P["6A6C6E"], fontSize:11, fontWeight:zenkai.pending.cause===c?700:400 }}>{c}</button>
               ))}
             </div>
-            <button disabled={!zenkai.pending.cause} onClick={()=>setZenkai(z=>({...z, pending:{...z.pending, tagged:true}}))}
+
+            <div style={{ fontSize:8, color:EMBER, fontFamily:"monospace", letterSpacing:"0.14em", marginBottom:7 }}>THE LONGER VERSION — OPTIONAL</div>
+            <textarea value={zNote} onChange={e=>setZNote(e.target.value)} rows={4}
+              placeholder="What was actually going on? Where were you, what was the day like, what did it feel like right before you let it go?"
+              style={{ width:"100%", boxSizing:"border-box", padding:"11px 12px", background:P["0E0F11"], border:`1px solid ${P["1A1C1E"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:12, fontFamily:"inherit", resize:"vertical", outline:"none", lineHeight:1.65, marginBottom:8 }}/>
+            <div style={{ fontSize:10, color:P["343638"], lineHeight:1.65, marginBottom:18 }}>
+              The tag tells you <i>what</i> broke the rhythm. This tells you why — and that's the part worth reading back in a month when the same cause shows up for the third time.
+            </div>
+
+            <button disabled={!zenkai.pending.cause} onClick={()=>{ setZenkai(z=>({...z, pending:{...z.pending, tagged:true, note:zNote}})); setZNote(""); }}
               style={{ width:"100%", padding:"13px", borderRadius:6, border:"none", cursor:zenkai.pending.cause?"pointer":"default",
                 background: zenkai.pending.cause ? CRIMSON : P["131416"], color: zenkai.pending.cause ? "#08080A" : P["343638"], fontSize:13, fontWeight:800, letterSpacing:"0.06em" }}>
               LOG IT AND KEEP GOING
@@ -1186,7 +1265,10 @@ export default function Zenkai() {
               <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:8, overflow:"hidden" }}>
                 <div style={{ padding:"11px 14px", borderBottom:`1px solid ${P["161719"]}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <div style={{ fontSize:8, color:CRIMSON, fontFamily:"monospace", letterSpacing:"0.16em" }}>DAILY QUESTS — THE LIFE LAYER</div>
-                  <div style={{ fontSize:10, color:P["484A4C"], fontFamily:"monospace" }}>{LIFE_QUESTS.filter(q=>qChecked[q.id]).length}/{LIFE_QUESTS.length}</div>
+                  <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                    <button onClick={allQuestsOn} style={{ fontSize:8, color:CRIMSON, background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.1em", padding:"2px 0" }}>ALL ✓</button>
+                    <div style={{ fontSize:10, color:P["484A4C"], fontFamily:"monospace" }}>{LIFE_QUESTS.filter(q=>qChecked[q.id]).length}/{LIFE_QUESTS.length}</div>
+                  </div>
                 </div>
                 {LIFE_QUESTS.map(q => <QuestRow key={q.id} q={q} done={!!qChecked[q.id]} onClick={()=>toggleQ(q.id)} showHint />)}
               </div>
@@ -1243,19 +1325,50 @@ export default function Zenkai() {
 
               {/* sleep */}
               <div style={{ marginBottom:14, background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:8, padding:"13px 15px" }}>
-                <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:8 }}>😴 SLEEP LOG — LAST NIGHT</div>
-                <div style={{ display:"flex", gap:10 }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:3 }}>BEDTIME</div>
-                    <input type="time" value={todaySleep.bed} onChange={e=>setSleepLog(p=>({...p,[TODAY]:{...todaySleep,bed:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:12, fontFamily:"monospace" }}/>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10, gap:8, flexWrap:"wrap" }}>
+                  <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace" }}>😴 SLEEP LOG — LAST NIGHT</div>
+                  {sleepH > 0 && (
+                    <div style={{ fontSize:19, fontFamily:"monospace", fontWeight:700, color:sleepH>=7?"#3A8F5C":sleepH>=6?EMBER:CRIMSON, lineHeight:1 }}>
+                      {sleepH}<span style={{ fontSize:11, marginLeft:2 }}>h</span>
+                      <span style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginLeft:7, letterSpacing:"0.1em" }}>{todaySleep.manual ? "MANUAL" : "CALCULATED"}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, alignItems:"end" }}>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:4 }}>BEDTIME</div>
+                    <input type="time" value={todaySleep.bed || ""} onChange={e=>setSleep({ bed:e.target.value })}
+                      style={{ display:"block", width:"100%", height:38, padding:"0 9px", margin:0, boxSizing:"border-box", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:13, fontFamily:"monospace", WebkitAppearance:"none", appearance:"none", lineHeight:"36px", minWidth:0 }}/>
                   </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:3 }}>HOURS SLEPT</div>
-                    <input type="number" step="0.5" min="0" max="12" placeholder="7.0" value={todaySleep.hours} onChange={e=>setSleepLog(p=>({...p,[TODAY]:{...todaySleep,hours:e.target.value}}))} style={{ width:"100%", padding:"7px 9px", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:12, fontFamily:"monospace" }}/>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:4 }}>WAKE TIME</div>
+                    <input type="time" value={todaySleep.wake || "04:00"} onChange={e=>setSleep({ wake:e.target.value })}
+                      style={{ display:"block", width:"100%", height:38, padding:"0 9px", margin:0, boxSizing:"border-box", background:P["0E0F11"], border:`1px solid ${P["161719"]}`, borderRadius:5, color:P["EAE8E2"], fontSize:13, fontFamily:"monospace", WebkitAppearance:"none", appearance:"none", lineHeight:"36px", minWidth:0 }}/>
                   </div>
                 </div>
+
+                <div style={{ marginTop:9, display:"flex", justifyContent:"space-between", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                  <div style={{ fontSize:9, color:P["343638"], fontFamily:"monospace" }}>
+                    {autoHours !== null && !todaySleep.manual ? "Hours calculated from bedtime → wake." : "Wake defaults to 4:00 AM."}
+                  </div>
+                  <button onClick={()=>setSleep({ manual: !todaySleep.manual })}
+                    style={{ fontSize:9, color:todaySleep.manual?EMBER:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", textDecoration:"underline", padding:0 }}>
+                    {todaySleep.manual ? "use calculated" : "enter hours manually"}
+                  </button>
+                </div>
+
+                {todaySleep.manual && (
+                  <div style={{ marginTop:9 }}>
+                    <div style={{ fontSize:8, color:P["484A4C"], fontFamily:"monospace", marginBottom:4 }}>HOURS SLEPT — MANUAL OVERRIDE</div>
+                    <input type="number" inputMode="decimal" step="0.25" min="0" max="14" placeholder="7.0" value={todaySleep.hours || ""} onChange={e=>setSleep({ hours:e.target.value })}
+                      style={{ display:"block", width:"100%", height:38, padding:"0 9px", margin:0, boxSizing:"border-box", background:P["0E0F11"], border:`1px solid ${EMBER}35`, borderRadius:5, color:P["EAE8E2"], fontSize:13, fontFamily:"monospace", WebkitAppearance:"none", appearance:"none" }}/>
+                    <div style={{ fontSize:9, color:P["343638"], marginTop:5, lineHeight:1.6 }}>For nights the clock doesn't capture — broken sleep, a 3 AM wake-up with her, a nap that counted.</div>
+                  </div>
+                )}
+
                 {sleepH > 0 && sleepH < 6 && (
-                  <div style={{ marginTop:8, padding:"7px 10px", background:CRIMSON+"12", border:`1px solid ${CRIMSON}25`, borderRadius:5, fontSize:9, color:CRIMSON, lineHeight:1.6 }}>
+                  <div style={{ marginTop:10, padding:"7px 10px", background:CRIMSON+"12", border:`1px solid ${CRIMSON}25`, borderRadius:5, fontSize:9, color:CRIMSON, lineHeight:1.6 }}>
                     Under 6 hours. Halve the Do or Die volume today and protect the 9:30 PM lights-out tonight. Adjusting the load is the system working, not you slipping.
                   </div>
                 )}
@@ -1268,7 +1381,10 @@ export default function Zenkai() {
                     <div style={{ fontSize:8, color:"#6B4FBB", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>SUPPLEMENTS — {todayAbbr.toUpperCase()}{todaySuppDone===totalSuppsToday&&totalSuppsToday>0 && <span style={{ marginLeft:6, padding:"1px 6px", background:"#6B4FBB", color:"#08080A", borderRadius:3, fontWeight:700 }}>COMPLETE ✓</span>}</div>
                     <div style={{ fontSize:13, color:P["EAE8E2"] }}>{todaySuppDone} of {totalSuppsToday} taken</div>
                   </div>
-                  <button onClick={()=>setSuppChecked(p=>{const n={...p};Object.keys(n).forEach(k=>{if(k.indexOf(todayAbbr+"-")===0)delete n[k];});return n;})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                  <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                    <button onClick={allSuppsOn} style={{ fontSize:8, color:CRIMSON, background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.1em", padding:"2px 0" }}>ALL ✓</button>
+                    <button onClick={()=>setSuppChecked(p=>{const n={...p};Object.keys(n).forEach(k=>{if(k.indexOf(todayAbbr+"-")===0)delete n[k];});return n;})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                  </div>
                 </div>
                 {todaySuppBlocks.map((block,bi)=>(
                   <div key={bi}>
@@ -1299,7 +1415,10 @@ export default function Zenkai() {
                     <div style={{ fontSize:8, color:"#3A8F5C", letterSpacing:"0.14em", fontFamily:"monospace", marginBottom:2 }}>MEALS{todayIsSunday?" — 24-HR FAST: SINGLE REFEED":""}{todayMealDone===todayMeals.length&&todayMeals.length>0 && <span style={{ marginLeft:6, padding:"1px 6px", background:"#3A8F5C", color:"#08080A", borderRadius:3, fontWeight:700 }}>COMPLETE ✓</span>}</div>
                     <div style={{ fontSize:13, color:P["EAE8E2"] }}>{todayMealDone} of {todayMeals.length} eaten</div>
                   </div>
-                  <button onClick={()=>setMealChecked({})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                  <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                    <button onClick={allMealsOn} style={{ fontSize:8, color:CRIMSON, background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.1em", padding:"2px 0" }}>ALL ✓</button>
+                    <button onClick={()=>setMealChecked({})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET</button>
+                  </div>
                 </div>
                 {todayMeals.map((meal,mi)=>{
                   const done = mealChecked[meal.id];
@@ -1429,6 +1548,23 @@ export default function Zenkai() {
               ))}
             </div>
 
+            <div style={{ fontSize:9, color:EMBER, letterSpacing:"0.18em", fontFamily:"monospace", marginBottom:10 }}>BACKUP — DO THIS WEEKLY</div>
+            <div style={{ background:P["0B0C0E"], border:`1px solid ${EMBER}30`, borderRadius:8, padding:"15px 16px", marginBottom:18 }}>
+              <div style={{ fontSize:11, color:P["6A6C6E"], lineHeight:1.75, marginBottom:13 }}>
+                Everything Zenkai knows about you lives in this phone's browser storage — nowhere else. Delete the home screen icon, clear Safari data, or let iOS reclaim space, and it's gone with no recovery. Export after every weekly review and drop the file in Drive or email it to yourself. Thirty seconds, and it's the difference between losing a week and losing a year.
+              </div>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                <button onClick={exportData} style={{ flex:"1 1 140px", padding:"12px", borderRadius:6, border:"none", background:EMBER, color:"#08080A", fontSize:12, fontWeight:800, cursor:"pointer", letterSpacing:"0.05em" }}>EXPORT BACKUP</button>
+                <button onClick={()=>fileRef.current && fileRef.current.click()} style={{ flex:"1 1 140px", padding:"12px", borderRadius:6, background:P["0E0F11"], border:`1px solid ${P["242628"]}`, color:P["A8A6A0"], fontSize:12, fontWeight:700, cursor:"pointer", letterSpacing:"0.05em" }}>RESTORE</button>
+              </div>
+              <input ref={fileRef} type="file" accept="application/json,.json" style={{ display:"none" }}
+                onChange={e=>{ const f=e.target.files && e.target.files[0]; if(f) importData(f); e.target.value=""; }}/>
+              {backupMsg && <div style={{ marginTop:11, padding:"8px 11px", background:EMBER+"10", border:`1px solid ${EMBER}25`, borderRadius:5, fontSize:11, color:EMBER, lineHeight:1.6 }}>{backupMsg}</div>}
+              <div style={{ marginTop:11, fontSize:10, color:P["343638"], fontFamily:"monospace" }}>
+                {Object.keys(xpLog).length} days logged · {history.length} archived · {Object.keys(reflections).length} reflections
+              </div>
+            </div>
+
             <div style={{ fontSize:9, color:CRIMSON, letterSpacing:"0.18em", fontFamily:"monospace", marginBottom:10 }}>RANK LADDER</div>
             <div style={{ background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:8, overflow:"hidden", marginBottom:18 }}>
               {RANKS.map((r,i)=>{
@@ -1447,12 +1583,13 @@ export default function Zenkai() {
               <div style={{ fontSize:9, color:EMBER, letterSpacing:"0.18em", fontFamily:"monospace", marginBottom:10 }}>ZENKAI LOG — EVERY RETURN</div>
               <div style={{ background:P["0B0C0E"], border:`1px solid ${P["161719"]}`, borderRadius:8, overflow:"hidden" }}>
                 {zenkai.moments.slice().reverse().map((m,i)=>(
-                  <div key={i} style={{ padding:"11px 15px", borderBottom:`1px solid ${P["101214"]}`, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+                  <div key={i} style={{ padding:"11px 15px", borderBottom:`1px solid ${P["101214"]}`, display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10 }}>
                     <div>
                       <div style={{ fontSize:11, color:P["C8C6C0"] }}>{m.cause}</div>
                       <div style={{ fontSize:9, color:P["343638"], fontFamily:"monospace" }}>{m.date} → returned {m.recoveredAt}</div>
+                      {m.note && <div style={{ fontSize:11, color:P["6A6C6E"], marginTop:6, paddingLeft:10, borderLeft:`2px solid ${EMBER}40`, lineHeight:1.65, fontStyle:"italic" }}>{m.note}</div>}
                     </div>
-                    <span style={{ fontSize:10, color:EMBER, fontFamily:"monospace", whiteSpace:"nowrap" }}>+1 ◆ · held {m.floor}</span>
+                    <span style={{ fontSize:10, color:EMBER, fontFamily:"monospace", whiteSpace:"nowrap", flexShrink:0 }}>+1 ◆ · held {m.floor}</span>
                   </div>
                 ))}
               </div>
@@ -1666,7 +1803,10 @@ export default function Zenkai() {
                             );
                           })}
                         </div>
-                        <button onClick={()=>setDodChecked({})} style={{ marginTop:9, fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
+                        <div style={{ display:"flex", gap:14, marginTop:9 }}>
+                          <button onClick={allDodOn} style={{ fontSize:8, color:CRIMSON, background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.1em" }}>ALL ✓</button>
+                          <button onClick={()=>setDodChecked({})} style={{ fontSize:8, color:P["484A4C"], background:"none", border:"none", cursor:"pointer", fontFamily:"monospace" }}>RESET ALL</button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1724,7 +1864,10 @@ export default function Zenkai() {
                   </div>
                 ) : (
                   <div style={{ marginBottom:14 }}>
-                    <div style={{ fontSize:9, color:wDay.color, letterSpacing:"0.16em", fontFamily:"monospace", marginBottom:9 }}>MAIN SESSION</div>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:9 }}>
+                      <div style={{ fontSize:9, color:wDay.color, letterSpacing:"0.16em", fontFamily:"monospace" }}>MAIN SESSION</div>
+                      {activeWD===todayWDIdx && <button onClick={allSessionOn} style={{ fontSize:8, color:wDay.color, background:"none", border:"none", cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.1em" }}>ALL ✓</button>}
+                    </div>
                     <div style={{ overflowX:"auto" }}>
                       <table style={{ width:"100%", borderCollapse:"collapse", minWidth:520 }}>
                         <thead><tr style={{ borderBottom:`1px solid ${P["141516"]}` }}>{["✓","Exercise","Sets","Reps","Rest","Focus"].map(h=><th key={h} style={{ padding:"6px 7px", textAlign:"left", fontSize:8, color:P["242628"], fontFamily:"monospace", letterSpacing:"0.1em", fontWeight:400 }}>{h}</th>)}</tr></thead>
